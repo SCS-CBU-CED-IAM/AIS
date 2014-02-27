@@ -1,0 +1,74 @@
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:ai="http://service.ais.swisscom.com/"
+	name="AisServiceInterface" 
+	targetNamespace="http://service.ais.swisscom.com/">
+	
+        <wsdl:types>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			targetNamespace="http://www.w3.org/XML/1998/namespace" 
+			version="1.0" />
+
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
+			xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+			elementFormDefault="unqualified" 
+			targetNamespace="http://service.ais.swisscom.com/"
+			version="1.0">
+
+			<xs:import
+				namespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+				schemaLocation="http://docs.oasis-open.org/dss/v1.0/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd" />
+			<xs:import
+				namespace="urn:com:swisscom:dss:1.0:schema"
+				schemaLocation="../schema/swisscom-dss-profile-schema-v1.0.xsd" />
+
+			<xs:element name="pending" type="ai:pending" />
+			<xs:element name="pendingResponse" type="ai:pendingResponse" />
+			<xs:element name="sign" type="ai:sign" />
+			<xs:element name="signResponse" type="ai:signResponse" />
+			<xs:complexType name="pending">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="async:PendingRequest" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="pendingResponse">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:Response" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="sign">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:SignRequest" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="signResponse">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:SignResponse" />
+				</xs:sequence>
+			</xs:complexType>
+		</xs:schema>
+	</wsdl:types>
+	<wsdl:message name="sign">
+		<wsdl:part element="ai:sign" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="signResponse">
+		<wsdl:part element="ai:signResponse" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="pendingResponse">
+		<wsdl:part element="ai:pendingResponse" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="pending">
+		<wsdl:part element="ai:pending" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:portType name="AisServiceInterface">
+		<wsdl:operation name="pending">
+			<wsdl:input message="ai:pending" name="pending"></wsdl:input>
+			<wsdl:output message="ai:pendingResponse" name="pendingResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="sign">
+			<wsdl:input message="ai:sign" name="sign"></wsdl:input>
+			<wsdl:output message="ai:signResponse" name="signResponse"></wsdl:output>
+		</wsdl:operation>
+	</wsdl:portType>
+</wsdl:definitions>

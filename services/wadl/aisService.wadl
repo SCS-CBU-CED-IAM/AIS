@@ -1,0 +1,46 @@
+<application xmlns="http://wadl.dev.java.net/2009/02"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+	xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema">
+
+	<grammars>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			attributeFormDefault="unqualified" elementFormDefault="unqualified"
+			targetNamespace="http://www.w3.org/XML/1998/namespace" />
+		<include href="../schema/oasis/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd"/>
+		<include href="../schema/swisscom-dss-profile-schema-v1.0.xsd" />
+	</grammars>
+
+	<resources base="https://ais.swissdigicert.ch/DSS-Server/rs">
+		<resource path="/v1.0">
+			<resource path="/pending">
+				<method name="POST">
+					<request>
+						<representation mediaType="application/xml"
+							element="async:PendingRequest" />
+						<representation mediaType="application/json" />
+					</request>
+					<response>
+						<representation mediaType="application/xml"
+							element="dss:Response" />
+						<representation mediaType="application/json" />
+					</response>
+				</method>
+			</resource>
+			<resource path="/sign">
+				<method name="POST">
+					<request>
+						<representation mediaType="application/xml"
+							element="dss:SignRequest" />
+						<representation mediaType="application/json" />
+					</request>
+					<response>
+						<representation mediaType="application/xml"
+							element="dss:Response" />
+						<representation mediaType="application/json" />
+					</response>
+				</method>
+			</resource>
+		</resource>
+	</resources>
+</application>

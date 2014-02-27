@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+
+  <uri name="http://www.w3.org/2001/XMLSchema"
+       uri="http://www.w3.org/2001/xml.xsd" />      
+
+  <system
+     systemId="http://www.w3.org/2001/xml.xsd"
+     uri="schema/w3/xml.xsd" />
+  <system           
+     systemId="http://www.w3.org/TR/xmldsig-core/xmldsig-core-schema.xsd"
+     uri="schema/w3/xmldsig-core-schema.xsd" />
+
+  <system
+     systemId="http://docs.oasis-open.org/dss/v1.0/oasis-dss-core-schema-v1.0-os.xsd"
+     uri="schema/oasis/oasis-dss-core-schema-v1.0-os.xsd" />
+  <system
+     systemId="http://www.oasis-open.org/committees/download.php/3408/oasis-sstc-saml-schema-assertion-1.1.xsd"
+     uri="schema/oasis/oasis-sstc-saml-schema-assertion-1.1.xsd" />
+  <system 
+     systemId="http://docs.oasis-open.org/dss/v1.0/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd"
+     uri="schema/oasis/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd" />
+  <system 
+     systemId="urn:oasis:names:tc:dss:1.0:profiles:TimeStamp:schema#"
+     uri="schema/oasis/oasis-dss-profiles-timestamping-schema-v1.0-r1.xsd" />
+
+  <system 
+     systemId="urn:com:swisscom:dss:1.0:schema"
+     uri="schema/swisscom-dss-profile-schema-v1.0.xsd" />
+
+</catalog>
