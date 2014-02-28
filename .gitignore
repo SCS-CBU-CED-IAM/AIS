@@ -21,3 +21,7 @@ Thumbs.db
 *.p7s
 run.sh
 AIS-Client-Prod-IAM_2014-2017.*
+
+# IDE #
+###################
+.idea/*
