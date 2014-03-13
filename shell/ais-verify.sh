@@ -117,9 +117,6 @@ if [ "$RC_CMS" = "0" -o "$RC_TSA" = "0" ]; then # Any verification ok
     OCSP_ERR=$?                                   # Keep related errorlevel
     if [ "$OCSP_ERR" = "0" ]; then                # Revocation check completed
       RES_CERT_STATUS=$(sed -n -e 's/.*.certs.level.*: //p' $TMP.certs.check)
-# TODO: *.certs.level.*: replaced by $RES_CERT:
-# $TMP.certs.check contains: /tmp/_tmp.U7YJ1I.certs.level1.pem: good
-# $RES_CERT=/tmp/_tmp.U7YJ1I.certs.level1.pem
      else                                         # -> check not ok
       RES_CERT_STATUS="error, status $OCSP_ERR"   # Details for OCSP verification
     fi
