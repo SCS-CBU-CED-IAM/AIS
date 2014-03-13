@@ -81,16 +81,25 @@ if [ "$RC_CMS" = "0" -o "$RC_TSA" = "0" ]; then # Any verification ok
   [ -s "$TMP.certs.pem" ] || error "Unable to extract the certificates in the signature"
   # Split the certificate list into separate files
   awk -v tmp=$TMP.certs.level -v c=-1 '/-----BEGIN CERTIFICATE-----/{inc=1;c++} inc {print > (tmp c ".pem")}/---END CERTIFICATE-----/{inc=0}' $TMP.certs.pem
-                                    
-  # Signers certificate is in level0
-  [ -s "$TMP.certs.level0.pem" ] || error "Unable to extract signers certificate from the list"
-  RES_CERT_SUBJ=$(openssl x509 -subject -nameopt utf8 -nameopt sep_comma_plus -noout -in $TMP.certs.level0.pem)
-  RES_CERT_ISSUER=$(openssl x509 -issuer -nameopt utf8 -nameopt sep_comma_plus -noout -in $TMP.certs.level0.pem)
-  RES_CERT_START=$(openssl x509 -startdate -noout -in $TMP.certs.level0.pem)
-  RES_CERT_END=$(openssl x509 -enddate -noout -in $TMP.certs.level0.pem)
+
+  # Find the signers certificate level based on OCSP url presence
+  RES_CERT=
+  for i in $TMP.certs.level?.pem; do
+    if [ -s "$i" ]; then
+      CHECK=$(openssl x509 -in $i -ocsp_uri -noout)
+      if [ -n "$CHECK" ]; then RES_CERT=$i; fi
+    fi
+  done
+  [ -s "$RES_CERT" ] || error "Unable to find the signers certificate based on the OCSP URI"
+
+  # Signers certificate
+  RES_CERT_SUBJ=$(openssl x509 -subject -nameopt utf8 -nameopt sep_comma_plus -noout -in $RES_CERT)
+  RES_CERT_ISSUER=$(openssl x509 -issuer -nameopt utf8 -nameopt sep_comma_plus -noout -in $RES_CERT)
+  RES_CERT_START=$(openssl x509 -startdate -noout -in $RES_CERT)
+  RES_CERT_END=$(openssl x509 -enddate -noout -in $RES_CERT)
 
   # Get OCSP uri from the signers certificate and verify the revocation status
-  OCSP_URL=$(openssl x509 -in $TMP.certs.level0.pem -ocsp_uri -noout)
+  OCSP_URL=$(openssl x509 -in $RES_CERT -ocsp_uri -noout)
   # Find the proper issuer certificate in the list
   ISSUER=
   for i in $TMP.certs.level?.pem; do
@@ -104,10 +113,13 @@ if [ "$RC_CMS" = "0" -o "$RC_TSA" = "0" ]; then # Any verification ok
   # Verify the revocation status over OCSP
   # -no_cert_verify: don't verify the OCSP response signers certificate at all
   if [ -n "$OCSP_URL" -a -n "$ISSUER" ]; then
-    openssl ocsp -CAfile $SIG_CA -issuer $ISSUER -nonce -out $TMP.certs.check -url $OCSP_URL -cert $TMP.certs.level0.pem -no_cert_verify > /dev/null 2>&1
+    openssl ocsp -CAfile $SIG_CA -issuer $ISSUER -nonce -out $TMP.certs.check -url $OCSP_URL -cert $RES_CERT -no_cert_verify > /dev/null 2>&1
     OCSP_ERR=$?                                   # Keep related errorlevel
     if [ "$OCSP_ERR" = "0" ]; then                # Revocation check completed
-      RES_CERT_STATUS=$(sed -n -e 's/.*.certs.level0.pem: //p' $TMP.certs.check)
+      RES_CERT_STATUS=$(sed -n -e 's/.*.certs.level.*: //p' $TMP.certs.check)
+# TODO: *.certs.level.*: replaced by $RES_CERT:
+# $TMP.certs.check contains: /tmp/_tmp.U7YJ1I.certs.level1.pem: good
+# $RES_CERT=/tmp/_tmp.U7YJ1I.certs.level1.pem
      else                                         # -> check not ok
       RES_CERT_STATUS="error, status $OCSP_ERR"   # Details for OCSP verification
     fi
