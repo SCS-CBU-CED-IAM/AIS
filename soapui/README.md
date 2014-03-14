@@ -54,24 +54,22 @@ ${#TestSuite#_tmp}|This property is used for temporary session data only
 #### Benchmark
 
 This SoapUI Project contains a Test Suite for load and performance testing against the AIS Service.
-It supports RESTful (XML) interface.
+It supports the RESTful (XML) interface.
 
 * File>Preferences>UI Settings: Enable "Do not disable the groovy log when running load tests"
 * Test Steps: Each test step contains a Script Assertion to log all Error Responses to soapui.log
-* Load Tests: Each load test contains a "Setup Script" as well as a "TeadDown Script" to log the load test statistics.
+* Load Tests: Each load test contains a "Setup Script" as well as a "TearDown Script" to log the load test statistics.
 
 Log Examples:
 ```
 $ tail -0f soapui.log | grep "\[log\]"
 2014-03-13 18:28:20,945 INFO  [log] '01 Timestamp' >> '01 Timestamp 1T100' : Sleep 1000ms
 2014-03-13 18:28:21,945 INFO  [log] '01 Timestamp' >> '01 Timestamp 1T100' : STARTED
-2014-03-13 18:28:34,880 INFO  [log] '01 Timestamp' >> '01 Timestamp 1T100' : CANCELED | 12855 ms | 23 Errors
+2014-03-13 18:28:30,125 ERROR [log] '01 Timestamp' >> '01 Timestamp 1T100' : 200 ErrorResponse=<?xml version="1.0" encoding="UTF-8" standalone="yes"?><SignResponse xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" xmlns:sc="urn:com:swisscom:dss:1.0:schema" RequestID="2014-03-13T16:43:17.833+0100" Profile="urn:com:swisscom:dss:v1.0"><Result><ResultMajor>urn:oasis:names:tc:dss:1.0:resultmajor:ResponderError</ResultMajor><ResultMinor>urn:com:swisscom:dss:1.0:resultminor:CantServeTimely</ResultMinor><ResultMessage xml:lang="en"/></Result></SignResponse>
+2014-03-13 18:28:34,880 INFO  [log] '01 Timestamp' >> '01 Timestamp 1T100' : CANCELED | 12855 ms | 1 Errors
 
 $ grep "13 Static 100T10" soapui.log | grep CantServeTimely | wc -l
 15
-
-
-2014-03-13 16:43:25,039 ERROR [log] '13 Static +TSA +OCSP' >> '13 Static 500T20' : 200 ErrorResponse=<?xml version="1.0" encoding="UTF-8" standalone="yes"?><SignResponse xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" xmlns:sc="urn:com:swisscom:dss:1.0:schema" RequestID="2014-03-13T16:43:17.833+0100" Profile="urn:com:swisscom:dss:v1.0"><Result><ResultMajor>urn:oasis:names:tc:dss:1.0:resultmajor:ResponderError</ResultMajor><ResultMinor>urn:com:swisscom:dss:1.0:resultminor:CantServeTimely</ResultMinor><ResultMessage xml:lang="en"/></Result></SignResponse>
 ```
 
 ###### Benchmark Test Suite Properties:
