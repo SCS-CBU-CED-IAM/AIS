@@ -116,13 +116,15 @@ case "$MSGTYPE" in
               <ais:sign>
                   <SignRequest RequestID="'$REQUESTID'" Profile="urn:com:swisscom:dss:v1.0" 
                                xmlns="urn:oasis:names:tc:dss:1.0:core:schema" 
-                               xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
+                               xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
+                               xmlns:sc="urn:com:swisscom:dss:1.0:schema">
                       <OptionalInputs>
                           <ClaimedIdentity>
                               <Name>'$CLAIMED_ID'</Name>
                           </ClaimedIdentity>
                           <SignatureType>urn:ietf:rfc:3161</SignatureType>
                           <AdditionalProfile>urn:oasis:names:tc:dss:1.0:profiles:timestamping</AdditionalProfile>
+                          <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
                       </OptionalInputs>
                       <InputDocuments>
                           <DocumentHash>
@@ -142,13 +144,15 @@ case "$MSGTYPE" in
     REQ_XML='
       <SignRequest RequestID="'$REQUESTID'" Profile="urn:com:swisscom:dss:v1.0"
                    xmlns="urn:oasis:names:tc:dss:1.0:core:schema"
-                   xmlns:dsig="http://www.w3.org/2000/09/xmldsig#">
+                   xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
+                   xmlns:sc="urn:com:swisscom:dss:1.0:schema">
           <OptionalInputs>
               <ClaimedIdentity>
                   <Name>'$CLAIMED_ID'</Name>
               </ClaimedIdentity>
               <SignatureType>urn:ietf:rfc:3161</SignatureType>
               <AdditionalProfile>urn:oasis:names:tc:dss:1.0:profiles:timestamping</AdditionalProfile>
+              <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
           </OptionalInputs>
           <InputDocuments>
               <DocumentHash>
@@ -171,7 +175,8 @@ case "$MSGTYPE" in
                   "Name": "'$CLAIMED_ID'"
               },
               "SignatureType": "urn:ietf:rfc:3161",
-              "AdditionalProfile": "urn:oasis:names:tc:dss:1.0:profiles:timestamping"
+              "AdditionalProfile": "urn:oasis:names:tc:dss:1.0:profiles:timestamping",
+              "sc.AddOcspResponse": {"@Type": "urn:ietf:rfc:2560"}
           },
           "InputDocuments": {"DocumentHash": {
               "dsig.DigestMethod": {"@Algorithm": "'$DIGEST_ALGO'"},
