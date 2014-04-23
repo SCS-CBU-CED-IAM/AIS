@@ -221,7 +221,7 @@ public class Soap {
                 if (_debug) {
                     System.out.println("Going to sign only with timestamp");
                 }
-                signDocumentTimestampOnly(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, claimedIdentity,
+                signDocumentTimestampOnly(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, addOCSP, claimedIdentity,
                         requestId);
             } else if (signatureType.equals(Include.Signature.STATIC)) {
                 if (_debug) {
@@ -371,12 +371,13 @@ public class Soap {
      * @param hashAlgo        Hash algorithm to use for signature
      * @param signDate        Date when document(s) will be signed
      * @param serverURI       Server uri where to send the request
+     * @param addOCSP         If set to true ocsp information will be add in signature otherwise not
      * @param claimedIdentity Signers identity
      * @param requestId       An id for the request
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentTimestampOnly(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate,
-                                           @Nonnull String serverURI, @Nonnull String claimedIdentity, String requestId)
+                                           @Nonnull String serverURI, boolean addOCSP, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         Include.SignatureType signatureType = Include.SignatureType.TIMESTAMP;
@@ -390,7 +391,7 @@ public class Soap {
         }
         additionalProfiles[0] = Include.AdditionalProfiles.TIMESTAMP.getProfileName();
 
-        int estimatedSize = getEstimatedSize(true, true, false);
+        int estimatedSize = getEstimatedSize(true, addOCSP, false);
 
         byte[][] pdfHash = new byte[pdfs.length][];
         for (int i = 0; i < pdfs.length; i++) {
@@ -398,7 +399,7 @@ public class Soap {
         }
 
         SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), null,
-                pdfHash, null, null, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
+                pdfHash, null, addOCSP ? _OCSP_URN : null, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
                 null, null, null, null, null, null, requestId);
 
         signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "RFC3161TimeStampToken");
@@ -722,7 +723,7 @@ public class Soap {
                 addTimeStampelemtn.addAttribute(new QName("Type"), timestampURN);
             }
 
-            if (ocspURN != null && !signatureType.equals(_TIMESTAMP_URN)) {
+            if (ocspURN != null) {
                 SOAPElement addOcspElement = optionalInputsElement.addChildElement("AddOcspResponse", "sc");
                 addOcspElement.addAttribute(new QName("Type"), ocspURN);
             }
