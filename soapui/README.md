@@ -10,20 +10,17 @@ A SoapUI Project has been created that contains example requests to invoke:
 * Organization Signature (RFC5652) Request
 * OnDemand Signature (RFC5652) Request
 
-#### Configuration
 
-* AP_ID: Each customer will need their own AP_ID. This identification is provided by Swisscom.
-* SSL KeyStore: You need your personal SSL certificate to establish a connection to AIS. This certificate must be signed by the Swisscom CA. Please get in contact with Swisscom to order a certificate.
-
-#### Instructions
+#### How To
 
 * Download & Install SoapUI (Windows/Mac/Linux) from http://sourceforge.net/projects/soapui
 * Checkout the complete GitHub Repository (including the `services` folder which contains the `*.wadl`/`*.wsdl` files)
-* Import the `ais-soapui-project.xml` file (File > Import Project)
-* Configure the SSL KeyStore (File > Preferences > SSL Settings)
-* [optional] Configure the Proxy (File > Preferences > Proxy Settings)
-* Configure the Test Suite Properties (Select "Regression Test Suite" > "Custom Properties")
-* Double click the "Regression Test Suite" and run it
+* Import the `ais-soapui-project.xml` file: "File" > "Import Project"
+* Increase the Socket Timeout to 300'000 ms: "File" > "Preferences" > "HTTP Settings" > "Socket Timeout (ms)"
+* Configure the SSL KeyStore: "File" > "Preferences" > "SSL Settings". Note: You need your personal SSL certificate to establish a connection to AIS. This certificate must be signed by the Swisscom CA. Please get in contact with Swisscom to order a certificate.
+* [optional] Configure the Proxy: "File" > "Preferences" > "Proxy Settings"
+* Configure the Test Suite Properties: Select "Regression Test Suite" > "Custom Properties". Note: Each customer will need their own AP_ID. This identification is provided by Swisscom.
+* Finally, just double click the "Regression Test Suite" and execute it
 
 
 #### Regression Test Suite
