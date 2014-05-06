@@ -6,7 +6,7 @@ Java source code and command line tool to sign PDF with iText.
 ### Usage
 
 ````
-Usage: swisscom.com.ais.itext.SignPDF [OPTIONS]
+Usage: com.swisscom.ais.itext.SignPDF [OPTIONS]
 
 Options:
   -v                - set verbose output
@@ -20,14 +20,14 @@ Options:
   -contact=VALUE    - signing contact
   -dn=VALUE         - distinguished name for OnDemand certificate signing
   -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)
-  -msg=VALUE        - Mobile ID step up message (requires -dn -msg -lang)
-  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msg -lang)
+  -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)
+  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msisdn -msg)
 
 Examples:
-  java swisscom.com.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf
-  java swisscom.com.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com
-  java swisscom.com.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'
-  java swisscom.com.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en
+  java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf
+  java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com
+  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'
+  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en
 ```
 
 #### Dependencies
@@ -68,15 +68,15 @@ Refer to `signpdf.properties` configuration file and modify the configuration pr
 
 You may use the latest Java Archive (JAR) `signpdf-x.y.z.jar` located in the `./jar` subfolder.
 
-Run the JAR (Unix/OSX): `java -cp "<JAR>/signpdf-x.y.z.jar:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+Run the JAR (Unix/OSX): `java -cp "<JAR>/signpdf-x.y.z.jar:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
 Run the JAR (Unix/OSX) with custom path to the properties file:
-`java -DpropertyFile.path=<CFG> -cp "<JAR>/signpdf-x.y.z.jar:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+`java -DpropertyFile.path=<CFG> -cp "<JAR>/signpdf-x.y.z.jar:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
 Run the JAR (Unix/OSX) with DEBUG enabled:
-`java -Djavax.net.debug=all -Djava.security.debug=certpath -cp "<JAR>/signpdf.jar:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+`java -Djavax.net.debug=all -Djava.security.debug=certpath -cp "<JAR>/signpdf.jar:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
-Create the latest JAR: `jar cfe <JAR>/signpdf-x.y.z.jar swisscom.com.ais.itext.SignPDF -C <CLASS> .`
+Create the latest JAR: `jar cfe <JAR>/signpdf-x.y.z.jar com.swisscom.ais.itext.SignPDF -C <CLASS> .`
 
 If you're on Windows then use a semicolon ; instead of the colon : 
 
@@ -91,13 +91,13 @@ Note: The class files are generated in a directory hierarchy which reflects the 
 The compiled application can be run as follows.
 
 Run the application (Unix/OSX):
-`java -cp "<CLASS>:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+`java -cp "<CLASS>:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
 Run the application (Unix/OSX) with custom path to the properties file:
-`java -DpropertyFile.path=<CFG> -cp "<CLASS>:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+`java -DpropertyFile.path=<CFG> -cp "<CLASS>:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
 Run the application (Unix/OSX) with DEBUG enabled:
-`java -Djavax.net.debug=all -Djava.security.debug=certpath -cp "<CLASS>:<LIB>/*" swisscom.com.ais.itext.SignPDF`
+`java -Djavax.net.debug=all -Djava.security.debug=certpath -cp "<CLASS>:<LIB>/*" com.swisscom.ais.itext.SignPDF`
 
 If you're on Windows then use a semicolon ; instead of the colon : 
 
@@ -105,4 +105,4 @@ If you're on Windows then use a semicolon ; instead of the colon :
 
 The latest JavaDoc is located in the `./doc` subfolder.
 
-Create the latest JavaDoc: `javadoc -windowtitle "Swisscom All-in Signing Service vx.y.z" -doctitle "<h1>Swisscom All-in Signing Service vx.y.z</h1>" -footer "Swisscom All-in Signing Service vx.y.z" -d <DOC> -private -sourcepath <SRC> swisscom.com.ais.itext`
+Create the latest JavaDoc: `javadoc -windowtitle "Swisscom All-in Signing Service vx.y.z" -doctitle "<h1>Swisscom All-in Signing Service vx.y.z</h1>" -footer "Swisscom All-in Signing Service vx.y.z" -d <DOC> -private -sourcepath <SRC> com.swisscom.ais.itext`
