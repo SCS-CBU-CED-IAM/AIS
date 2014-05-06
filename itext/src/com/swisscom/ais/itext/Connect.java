@@ -20,7 +20,7 @@
  * Swisscom (Schweiz) AG
  */
 
-package swisscom.com.ais.itext;
+package com.swisscom.ais.itext;
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

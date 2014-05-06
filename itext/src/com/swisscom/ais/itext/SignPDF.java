@@ -24,7 +24,7 @@
  * **********************************************************************************************************
  */
 
-package swisscom.com.ais.itext;
+package com.swisscom.ais.itext;
 
 import javax.annotation.*;
 
@@ -101,7 +101,7 @@ public class SignPDF {
      * Prints usage
      */
     public static void printUsage() {
-        System.out.println("Usage: swisscom.com.ais.itext.SignPDF [OPTIONS]");
+        System.out.println("Usage: com.swisscom.ais.itext.SignPDF [OPTIONS]");
         System.out.println();
         System.out.println("Options:");
         System.out.println("  -v                - set verbose output");
@@ -115,14 +115,14 @@ public class SignPDF {
         System.out.println("  -contact=VALUE    - signing contact");
         System.out.println("  -dn=VALUE         - distinguished name for OnDemand certificate signing");
         System.out.println("  -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)");
-        System.out.println("  -msg=VALUE        - Mobile ID step up message (requires -dn -msg -lang)");
-        System.out.println("  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msg -lang)");
+        System.out.println("  -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)");
+        System.out.println("  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msisdn -msg)");
         System.out.println();
         System.out.println("Examples:");
-        System.out.println("  java swisscom.com.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
-        System.out.println("  java swisscom.com.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com");
-        System.out.println("  java swisscom.com.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'");
-        System.out.println("  java swisscom.com.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en");
+        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
+        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com");
+        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'");
+        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en");
     }
 
     /**

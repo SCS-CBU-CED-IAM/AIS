@@ -21,7 +21,7 @@
  * Swisscom (Schweiz) AG
  */
 
-package swisscom.com.ais.itext;
+package com.swisscom.ais.itext;
 
 import com.itextpdf.text.pdf.codec.Base64;
 import org.w3c.dom.Document;

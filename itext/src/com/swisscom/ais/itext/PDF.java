@@ -20,7 +20,7 @@
  * Swisscom (Schweiz) AG
  */
 
-package swisscom.com.ais.itext;
+package com.swisscom.ais.itext;
 
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.*;
