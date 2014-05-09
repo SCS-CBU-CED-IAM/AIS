@@ -126,16 +126,26 @@ if [ "$RC_CMS" = "0" -o "$RC_TSA" = "0" ]; then # Any verification ok
 
   # Check for embedded elements by decoding the PKCS#7
   openssl cms -cmsout -print -noout -inform der -in $TMP.sig.der -out $TMP.pkcs7.dump
-  # OCSP: object: id-smime-aa-ets-revocationValues (1.2.840.113549.1.9.16.2.24)
-  CHECK_OCSP=$(grep 1.2.840.113549.1.9.16.2.24 $TMP.pkcs7.dump)
-  if [ -n "$CHECK_OCSP" ]; then
-    EMBEDDED_OCSP="Yes"
+
+  # OCSP: CMS Advanced Electronic Signatures revocation-values
+  # object: id-smime-aa-ets-revocationValues (1.2.840.113549.1.9.16.2.24)
+  CHECK=$(grep 1.2.840.113549.1.9.16.2.24 $TMP.pkcs7.dump)
+  if [ -n "$CHECK" ]; then
+    EMBEDDED_OCSP_1="Yes"
    else
-    EMBEDDED_OCSP="No"
+    EMBEDDED_OCSP_1="No"
+  fi
+  # OCSP: PDF signature certificate revocation information attribute
+  # object: undefined (1.2.840.113583.1.1.8)
+  CHECK=$(grep 1.2.840.113583.1.1.8 $TMP.pkcs7.dump)
+  if [ -n "$CHECK" ]; then
+    EMBEDDED_OCSP_2="Yes"
+   else
+    EMBEDDED_OCSP_2="No"
   fi
   # TSA: object: id-smime-aa-timeStampToken (1.2.840.113549.1.9.16.2.14)
-  CHECK_TSA=$(grep 1.2.840.113549.1.9.16.2.14 $TMP.pkcs7.dump)
-  if [ -n "$CHECK_TSA" ]; then
+  CHECK=$(grep 1.2.840.113549.1.9.16.2.14 $TMP.pkcs7.dump)
+  if [ -n "$CHECK" ]; then
     EMBEDDED_TSA="Yes"
    else
     EMBEDDED_TSA="No"
@@ -147,7 +157,8 @@ if [ "$RC_CMS" = "0" -o "$RC_TSA" = "0" ]; then # Any verification ok
     echo "                $RES_CERT_ISSUER"
     echo "                validity= $RES_CERT_START $RES_CERT_END"
     echo "                OCSP check= $RES_CERT_STATUS"
-    echo " Embedded OCSP: $EMBEDDED_OCSP"
+    echo " Embedded OCSP: CMS (1.2.840.113549.1.9.16.2.24)= $EMBEDDED_OCSP_1"
+    echo "                PDF (1.2.840.113583.1.1.8)= $EMBEDDED_OCSP_2"
     echo " Embedded TSA : $EMBEDDED_TSA"
   fi
  else                                             # -> verification failure

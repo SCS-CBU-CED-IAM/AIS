@@ -82,7 +82,8 @@ OK on myfile.p7s with following details:
                 issuer= C=ch,O=Swisscom,OU=Digital Certificate Services,CN=Swisscom TEST Saphir CA 2
                 validity= notBefore=Jan 22 08:48:10 2014 GMT notAfter=Jan 22 08:58:10 2014 GMT
                 OCSP check= good
- Embedded OCSP: Yes
+ Embedded OCSP: CMS (1.2.840.113549.1.9.16.2.24)= Yes
+                PDF (1.2.840.113583.1.1.8)= Yes
  Embedded TSA : Yes
 ```
 
