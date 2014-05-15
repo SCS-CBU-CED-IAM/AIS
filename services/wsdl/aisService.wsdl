@@ -33,7 +33,7 @@
 
 	<wsdl:service name="AisService">
 		<wsdl:port binding="as:AisServiceSoapBinding" name="AisServicePort">
-		    <soap:address location="https://ais.swissdigicert.ch/DSS-Server/ws" />
+		    <soap:address location="https://ais.swisscom.com/AIS-Server/ws" />
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

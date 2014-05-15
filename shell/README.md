@@ -70,8 +70,8 @@ OK on myfile.txt with following details:
 
 ```
 FAILED on myfile.txt with following details:
- Result major   : urn:com:swisscom:dss:1.0:resultmajor:SubsystemError with exit 1
- Result minor   : urn:com:swisscom:dss:1.0:resultminor:subsystem:MobileID:service
+ Result major   : urn:swisscom:ais:1.0:resultmajor:SubsystemError with exit 1
+ Result minor   : urn:swisscom:ais:1.0:resultminor:subsystem:MobileID:service
  Result message : mss:_105
 ```
 

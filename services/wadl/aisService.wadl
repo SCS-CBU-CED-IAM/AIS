@@ -8,10 +8,10 @@
 			attributeFormDefault="unqualified" elementFormDefault="unqualified"
 			targetNamespace="http://www.w3.org/XML/1998/namespace" />
 		<include href="../schema/oasis/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd"/>
-		<include href="../schema/swisscom-dss-profile-schema-v1.0.xsd" />
+		<include href="../schema/swisscom-ais-profile-schema-v1.0.xsd" />
 	</grammars>
 
-	<resources base="https://ais.swissdigicert.ch/DSS-Server/rs">
+	<resources base="https://ais.swisscom.com/AIS-Server/rs">
 		<resource path="/v1.0">
 			<resource path="/pending">
 				<method name="POST">

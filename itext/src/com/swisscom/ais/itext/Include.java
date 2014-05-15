@@ -135,12 +135,12 @@ public class Include {
         /**
          * Request type sign request with name and urn
          */
-        SignRequest("SignRequest", "urn:com:swisscom:dss:v1.0"),
+        SignRequest("SignRequest", "http://ais.swisscom.ch/1.0"),
 
         /**
          * Request type pending request with name and urn
          */
-        PendingRequest("PendingRequest", "urn:com:swisscom:dss:v1.0");
+        PendingRequest("PendingRequest", "http://ais.swisscom.ch/1.0");
 
         /**
          * Urn of request type
@@ -276,12 +276,12 @@ public class Include {
         /**
          * Additional profile type batch with urn
          */
-        BATCH("urn:com:swisscom:dss:v1.0:profiles:batchprocessing"),
+        BATCH("http://ais.swisscom.ch/1.0/profiles/batchprocessing"),
 
         /**
          * Additional profile type on demand certificate with urn
          */
-        ON_DEMAND_CERTIFCATE("urn:com:swisscom:dss:v1.0:profiles:ondemandcertificate"),
+        ON_DEMAND_CERTIFCATE("http://ais.swisscom.ch/1.0/profiles/ondemandcertificate"),
 
         /**
          * Additional profile type timestamp with urn

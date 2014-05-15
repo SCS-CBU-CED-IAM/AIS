@@ -54,11 +54,6 @@ import java.util.Properties;
 public class Soap {
 
     /**
-     * Constant for certificate request profile
-     */
-    private static final String _CERTIFICATE_REQUEST_PROFILE = "urn:com:swisscom:advanced";
-
-    /**
      * Constant for timestamp urn
      */
     private static final String _TIMESTAMP_URN = "urn:ietf:rfc:3161";
@@ -71,7 +66,7 @@ public class Soap {
     /**
      * Constant for mobile id type
      */
-    private static final String _MOBILE_ID_TYPE = "urn:com:swisscom:auth:mobileid:v1.0";
+    private static final String _MOBILE_ID_TYPE = "http://ais.swisscom.ch/1.0/auth/mobileid/1.0";
 
     /**
      * Path to configuration file. Can also set in constructor
@@ -215,7 +210,7 @@ public class Soap {
                 if (_debug) {
                     System.out.println("Going to sign with ondemand");
                 }
-                signDocumentOnDemandCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, _CERTIFICATE_REQUEST_PROFILE,
+                signDocumentOnDemandCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, true,
                         addTimestamp, addOCSP, distinguishedName, claimedIdentity, requestId);
             } else if (signatureType.equals(Include.Signature.TIMESTAMP)) {
                 if (_debug) {
@@ -275,7 +270,7 @@ public class Soap {
             pdfHash[i] = pdfs[i].getPdfHash(signDate, estimatedSize, hashAlgo.getHashAlgorythm(), false);
         }
 
-        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), _CERTIFICATE_REQUEST_PROFILE,
+        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), true,
                 pdfHash, addTimestamp ? _TIMESTAMP_URN : null, addOcsp ? _OCSP_URN : null, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, _MOBILE_ID_TYPE, phoneNumber,
                 certReqMsg, certReqMsgLang, null, requestId);
@@ -300,7 +295,7 @@ public class Soap {
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentOnDemandCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                          @Nonnull String certRequestProfile, boolean addTimeStamp, boolean addOcsp,
+                                          @Nonnull boolean mobileIDStepUp, boolean addTimeStamp, boolean addOcsp,
                                           @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
@@ -320,7 +315,7 @@ public class Soap {
             pdfHash[i] = pdfs[i].getPdfHash(signDate, estimatedSize, hashAlgo.getHashAlgorythm(), false);
         }
 
-        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), certRequestProfile,
+        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), true,
                 pdfHash, addTimeStamp ? _TIMESTAMP_URN : null, addOcsp ? _OCSP_URN : null, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, null, null, null, null, null, requestId);
 
@@ -357,7 +352,7 @@ public class Soap {
             pdfHash[i] = pdfs[i].getPdfHash(signDate, estimatedSize, hashAlgo.getHashAlgorythm(), false);
         }
 
-        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), null,
+        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), false,
                 pdfHash, addTimeStamp ? _TIMESTAMP_URN : null, addOCSP ? _OCSP_URN : null, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), null, null, null, null, null, null, requestId);
 
@@ -398,7 +393,7 @@ public class Soap {
             pdfHash[i] = pdfs[i].getPdfHash(signDate, estimatedSize, hashAlgo.getHashAlgorythm(), true);
         }
 
-        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), null,
+        SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), false,
                 pdfHash, null, addOCSP ? _OCSP_URN : null, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
                 null, null, null, null, null, null, requestId);
 
@@ -617,7 +612,7 @@ public class Soap {
      * @throws IOException   If there is an error writing debug information
      */
     private SOAPMessage createRequestMessage(@Nonnull Include.RequestType reqType, @Nonnull String digestMethodAlgorithmURL,
-                                             String certRequestProfile, @Nonnull byte[][] hashList, String timestampURN, String ocspURN,
+                                             boolean mobileIDStepUp, @Nonnull byte[][] hashList, String timestampURN, String ocspURN,
                                              String[] additionalProfiles, String claimedIdentity,
                                              @Nonnull String signatureType, String distinguishedName,
                                              String mobileIdType, String phoneNumber, String certReqMsg, String certReqMsgLang,
@@ -633,7 +628,7 @@ public class Soap {
         envelope.setPrefix("soap");
         envelope.addAttribute(new QName("xmlns"), "urn:oasis:names:tc:dss:1.0:core:schema");
         envelope.addNamespaceDeclaration("dsig", "http://www.w3.org/2000/09/xmldsig#");
-        envelope.addNamespaceDeclaration("sc", "urn:com:swisscom:dss:1.0:schema");
+        envelope.addNamespaceDeclaration("sc", "http://ais.swisscom.ch/1.0/schema");
         envelope.addNamespaceDeclaration("ais", "http://service.ais.swisscom.com/");
 
         //SOAP Header
@@ -669,7 +664,7 @@ public class Soap {
             digestValueElement.addTextNode(s);
         }
 
-        if (timestampURN != null || additionalProfiles != null || ocspURN != null || certRequestProfile != null || claimedIdentity != null || signatureType != null) {
+        if (timestampURN != null || additionalProfiles != null || ocspURN != null || claimedIdentity != null || signatureType != null) {
             SOAPElement optionalInputsElement = requestElement.addChildElement("OptionalInputs");
 
             SOAPElement additionalProfileelement;
@@ -686,19 +681,13 @@ public class Soap {
                 claimedIdNameElement.addTextNode(claimedIdentity);
             }
 
-            if (certRequestProfile != null) {
+            if (mobileIDStepUp) {
                 SOAPElement certificateRequestElement = optionalInputsElement.addChildElement("CertificateRequest", "sc");
-                if (!_CERTIFICATE_REQUEST_PROFILE.equals(certRequestProfile)) {
-                    certificateRequestElement.addAttribute(new QName("Profile"), certRequestProfile);
-                }
                 if (distinguishedName != null) {
-                    SOAPElement distinguishedNameElement = _CERTIFICATE_REQUEST_PROFILE.equals(certRequestProfile) ?
-                            certificateRequestElement.addChildElement("DistinguishedName", "sc") :
-                            certificateRequestElement.addChildElement("DistinguishedName");
+                    SOAPElement distinguishedNameElement = certificateRequestElement.addChildElement("DistinguishedName", "sc");
                     distinguishedNameElement.addTextNode(distinguishedName);
                     if (phoneNumber != null) {
                         SOAPElement stepUpAuthorisationElement = certificateRequestElement.addChildElement("StepUpAuthorisation", "sc");
-
                         if (mobileIdType != null) {
                             SOAPElement mobileIdElement = stepUpAuthorisationElement.addChildElement("MobileID", "sc");
                             mobileIdElement.addAttribute(new QName("Type"), _MOBILE_ID_TYPE);

@@ -114,10 +114,10 @@ case "$MSGTYPE" in
                      xmlns:ais="http://service.ais.swisscom.com/">
           <soap:Body>
               <ais:sign>
-                  <SignRequest RequestID="'$REQUESTID'" Profile="urn:com:swisscom:dss:v1.0" 
+                  <SignRequest RequestID="'$REQUESTID'" Profile="http://ais.swisscom.ch/1.0" 
                                xmlns="urn:oasis:names:tc:dss:1.0:core:schema" 
                                xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
-                               xmlns:sc="urn:com:swisscom:dss:1.0:schema">
+                               xmlns:sc="http://ais.swisscom.ch/1.0/schema">
                       <OptionalInputs>
                           <ClaimedIdentity>
                               <Name>'$CLAIMED_ID'</Name>
@@ -142,10 +142,10 @@ case "$MSGTYPE" in
   # MessageType is XML. Define the Request
   XML)
     REQ_XML='
-      <SignRequest RequestID="'$REQUESTID'" Profile="urn:com:swisscom:dss:v1.0"
+      <SignRequest RequestID="'$REQUESTID'" Profile="http://ais.swisscom.ch/1.0"
                    xmlns="urn:oasis:names:tc:dss:1.0:core:schema"
                    xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"
-                   xmlns:sc="urn:com:swisscom:dss:1.0:schema">
+                   xmlns:sc="http://ais.swisscom.ch/1.0/schema">
           <OptionalInputs>
               <ClaimedIdentity>
                   <Name>'$CLAIMED_ID'</Name>
@@ -169,7 +169,7 @@ case "$MSGTYPE" in
     REQ_JSON='{
       "SignRequest": {
           "@RequestID": "'$REQUESTID'",
-          "@Profile": "urn:com:swisscom:dss:v1.0",
+          "@Profile": "http://ais.swisscom.ch/1.0",
           "OptionalInputs": {
               "ClaimedIdentity": {
                   "Name": "'$CLAIMED_ID'"
@@ -200,17 +200,17 @@ esac
 # Define cURL Options according to Message Type
 case "$MSGTYPE" in
   SOAP)
-    URL=https://ais.swisscom.com/DSS-Server/ws
+    URL=https://ais.swisscom.com/AIS-Server/ws
     HEADER_ACCEPT="Accept: application/xml"
     HEADER_CONTENT_TYPE="Content-Type: text/xml;charset=utf-8"
     CURL_OPTIONS="--data" ;;
   XML)
-    URL=https://ais.swisscom.com/DSS-Server/rs/v1.0/sign
+    URL=https://ais.swisscom.com/AIS-Server/rs/v1.0/sign
     HEADER_ACCEPT="Accept: application/xml"
     HEADER_CONTENT_TYPE="Content-Type: application/xml;charset=utf-8"
     CURL_OPTIONS="--request POST --data" ;;
   JSON)
-    URL=https://ais.swisscom.com/DSS-Server/rs/v1.0/sign
+    URL=https://ais.swisscom.com/AIS-Server/rs/v1.0/sign
     HEADER_ACCEPT="Accept: application/json"
     HEADER_CONTENT_TYPE="Content-Type: application/json;charset=utf-8"
     CURL_OPTIONS="--request POST --data-binary" ;;

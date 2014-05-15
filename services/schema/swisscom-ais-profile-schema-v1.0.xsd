@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns="urn:com:swisscom:dss:1.0:schema" xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
+<xs:schema xmlns="http://ais.swisscom.ch/1.0/schema" xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
 	xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="urn:com:swisscom:dss:1.0:schema" elementFormDefault="qualified"
+	targetNamespace="http://ais.swisscom.ch/1.0/schema" elementFormDefault="qualified"
 	attributeFormDefault="unqualified">
 	<xs:annotation>
 		<xs:documentation xml:lang="en">This Schema defines the
