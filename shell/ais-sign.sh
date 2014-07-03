@@ -187,7 +187,7 @@ case "$MSGTYPE" in
                           <SignatureType>urn:ietf:rfc:3369</SignatureType>
                           '$ONDEMAND'
                           <AddTimestamp Type="urn:ietf:rfc:3161"/>
-                          <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
+                          <sc:AddRevocationInformation Depth="CHAIN" Type="BOTH"/>
                       </OptionalInputs>
                       <InputDocuments>
                           <DocumentHash>
@@ -216,7 +216,7 @@ case "$MSGTYPE" in
               <SignatureType>urn:ietf:rfc:3369</SignatureType>
               '$ONDEMAND'
               <AddTimestamp Type="urn:ietf:rfc:3161"/>
-              <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
+              <sc:AddRevocationInformation Depth="CHAIN" Type="BOTH"/>
           </OptionalInputs>
           <InputDocuments>
               <DocumentHash>
@@ -241,7 +241,7 @@ case "$MSGTYPE" in
               "SignatureType": "urn:ietf:rfc:3369",
               '$ONDEMAND'
               "AddTimestamp": {"@Type": "urn:ietf:rfc:3161"},
-              "sc.AddOcspResponse": {"@Type": "urn:ietf:rfc:2560"}
+              "sc.AddRevocationInformation": {"@Depth": "CHAIN","@Type": "BOTH"}
           },
           "InputDocuments": {"DocumentHash": {
               "dsig.DigestMethod": {"@Algorithm": "'$DIGEST_ALGO'"},

@@ -25,13 +25,24 @@ package com.swisscom.ais.itext;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.codec.Base64;
+import com.itextpdf.text.pdf.security.*;
 
 import javax.annotation.Nonnull;
+
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+
 import java.io.*;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509CRL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 
 public class PDF {
@@ -158,15 +169,21 @@ public class PDF {
     /**
      * Add a signature to pdf document
      *
-     * @param externalSignature The extern generated signature
-     * @param estimatedSize     Size of external signature
+     * @param externalSignature  The extern generated signature
+     * @param estimatedSize      Size of external signature
      * @throws IOException       If estimated size is to small, signature appearance can not be closed or output file can not be written
      * @throws DocumentException If signature appearance can not be closed
      */
-    private void addSignatureToPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws IOException, DocumentException {
+    public void createSignedPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws IOException, DocumentException {
 
+    	if (Soap._debugMode) {
+    		System.out.println("\nEstimated SignatureSize: " + estimatedSize);
+    		System.out.println("Actual    SignatureSize: " + externalSignature.length);
+        	System.out.println("Remaining Size         : " + (estimatedSize-externalSignature.length));
+    	}
+		
         if (estimatedSize < externalSignature.length) {
-            throw new IOException("Not enough space for signature");
+            throw new IOException("\nNot enough space for signature (" + (estimatedSize-externalSignature.length) + " bytes)");
         }
 
         PdfLiteral pdfLiteral = (PdfLiteral) pdfSignature.get(PdfName.CONTENTS);
@@ -178,22 +195,111 @@ public class PDF {
         PdfDictionary dic2 = new PdfDictionary();
         dic2.put(PdfName.CONTENTS, new PdfString(outc).setHexWriting(true));
         pdfSignatureAppearance.close(dic2);
+           
+        // Save to file
         OutputStream outputStream = new FileOutputStream(outputFilePath);
         byteArrayOutputStream.writeTo(outputStream);
+        
+        if (Soap._debugMode) {
+	    	System.out.println("\nOK writing to " + outputFilePath);
+	    }
+        
+        byteArrayOutputStream.close();
         outputStream.close();
-        byteArrayOutputStream = null;
     }
+	
+	/**
+	 * @param ocspArr List of OCSP Responses as base64 encoded String
+	 * @param crlArr  List of CRLs as base64 encoded String
+	 * @throws IOException
+	 * @throws DocumentException
+	 * @throws GeneralSecurityException
+	 * @throws OCSPException
+	 */
+	public void addValidationInformation(ArrayList<String> ocspArr, ArrayList<String> crlArr) throws IOException, DocumentException, GeneralSecurityException, OCSPException {
+		if (ocspArr == null && crlArr == null)
+			return;
+		
+		Collection<byte[]> ocspColl = new ArrayList<byte[]>();
+		Collection<byte[]> crlColl = new ArrayList<byte[]>();
 
-    /**
-     * Decode hash to Base64 call method to sign PDF
-     *
-     * @param hash          Signature hash as Base64
-     * @param estimatedSize Size of external signature
-     * @throws IOException       If estimated size is to small, signature appearance can not be closed or output file can not be written
-     * @throws DocumentException If signature appearance can not be closed
-     */
-    public void sign(@Nonnull String hash, int estimatedSize) throws IOException, DocumentException {
-        addSignatureToPdf(Base64.decode(hash), estimatedSize);
-    }
+		OCSPResp ocspResp = null;
+		BasicOCSPResp basicResp = null;
+		
+		// Decode each OCSP Response (String of base64 encoded form) and add it to the Collection (byte[])
+		if (ocspArr != null) {
+			for (String ocspBase64 : ocspArr) {
+				ocspResp = new OCSPResp(new ByteArrayInputStream(Base64.decode(ocspBase64)));
+				basicResp = (BasicOCSPResp) ocspResp.getResponseObject();
+				
+				if (Soap._debugMode) {
+					System.out.println("\nEmbedding OCSP Response...");
+					System.out.println("Status                : " + ((ocspResp.getStatus() == 0) ? "GOOD" : "BAD"));
+					System.out.println("Produced at           : " + basicResp.getProducedAt());
+					System.out.println("This Update           : " + basicResp.getResponses()[0].getThisUpdate());
+					System.out.println("Next Update           : " + basicResp.getResponses()[0].getNextUpdate());
+					System.out.println("X509 Cert Issuer      : " + basicResp.getCerts()[0].getIssuer());
+					System.out.println("X509 Cert Subject     : " + basicResp.getCerts()[0].getSubject());
+					System.out.println("Responder ID X500Name : " + basicResp.getResponderId().toASN1Object().getName());
+					System.out.println("Certificate ID        : " + basicResp.getResponses()[0].getCertID().getSerialNumber().toString() + 
+							" (" + basicResp.getResponses()[0].getCertID().getSerialNumber().toString(16).toUpperCase() + ")");
+				}
+					
+				ocspColl.add(basicResp.getEncoded()); // Add Basic OCSP Response to Collection (ASN.1 encoded representation of this object) 
+			}			
+		}
+		
+		
+		X509CRL x509crl = null;
+		
+		// Decode each CRL (String of base64 encoded form) and add it to the Collection (byte[])
+		if (crlArr != null) {
+			for (String crlBase64 : crlArr) {		
+				x509crl = (X509CRL) CertificateFactory.getInstance("X.509").generateCRL(new ByteArrayInputStream(Base64.decode(crlBase64)));
+				
+				if (Soap._debugMode) {
+					System.out.println("\nEmbedding CRL...");
+					System.out.println("IssuerDN                    : " + x509crl.getIssuerDN());
+					System.out.println("This Update                 : " + x509crl.getThisUpdate());
+					System.out.println("Next Update                 : " + x509crl.getNextUpdate());
+					System.out.println("No. of Revoked Certificates : " + ((x509crl.getRevokedCertificates() == null) ? "0" : x509crl.getRevokedCertificates().size()));
+				}
+				
+				crlColl.add(x509crl.getEncoded()); // Add CRL to Collection (ASN.1 DER-encoded form of this CRL)
+			}
+		}
+		
+		PdfReader reader = new PdfReader(outputFilePath);
+
+		byteArrayOutputStream = new ByteArrayOutputStream();
+		PdfStamper stamper = new PdfStamper(reader, byteArrayOutputStream, '\0', true);
+	    LtvVerification validation = stamper.getLtvVerification();
+	    
+	    // Add the CRL/OCSP validation information to the DSS Dictionary
+	    for (String sigName : stamper.getAcroFields().getSignatureNames()){
+	        validation.addVerification(
+	        	sigName,  // Signature Name
+	        	ocspColl, // OCSP
+	        	crlColl,  // CRL
+	        	null      // certs
+	        );
+	    }
+	    
+	    validation.merge(); // Merges the validation with any validation already in the document or creates a new one.
+	    
+	    stamper.close();
+	    reader.close();
+	    
+	    // Save to (same) file
+	    OutputStream outputStream = new FileOutputStream (outputFilePath); 
+	    byteArrayOutputStream.writeTo(outputStream);	    
+	    
+	    if (Soap._debugMode) {
+	    	System.out.println("\nOK merging LTV validation information to " + outputFilePath);
+	    }
+	    
+	    byteArrayOutputStream.close();
+	    outputStream.close();  
+	}
 
 }

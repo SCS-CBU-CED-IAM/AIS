@@ -96,6 +96,52 @@ public class SignPDF {
      * Path for properties file. Needed if standard path will not be used.
      */
     String propertyFilePath = null;
+    
+    /**
+     * Main method to start AIS. This will parse given parameters e.g. input file, output file etc. and start signature
+     * process. Furthermore this method prints error message if signing failed. See usage part in README to know how to
+     * use it.
+     *
+     * @param args Arguments that will be parsed. See useage part in README for more details.
+     */
+    public static void main(String[] args) {
+
+        SignPDF ais = new SignPDF();
+        ais.runSigning(args);
+
+    }
+    
+    /**
+     * Parse given parameters, check if all necessary parameters exist and if there are not unnecessary parameters.
+     * If there are problems with parameters application will abort with exit code 1.
+     * After all checks are done signing process will start.
+     *
+     * @param params
+     */
+    private void runSigning(String[] params) {
+
+        parseParameters(params);
+        checkNecessaryParams();
+        checkUnnecessaryParams();
+
+        try {
+            //parse signature
+            if (signature.equals(Include.Signature.SIGN) && distinguishedName != null) {
+                signature = Include.Signature.ONDEMAND;
+            } else if (signature.equals(Include.Signature.SIGN) && distinguishedName == null) {
+                signature = Include.Signature.STATIC;
+            }
+
+            //start signing
+            Soap dss_soap = new Soap(verboseMode, debugMode, propertyFilePath);
+            dss_soap.sign(signature, pdfToSign, signedPDF, signingReason, signingLocation, signingContact, distinguishedName, msisdn, msg, language);
+        } catch (Exception e) {
+            if (debugMode || verboseMode) {
+                printError(e.getMessage().replaceAll("java.lang.Exception", "").length() > 0 ? e.getMessage() : "");
+            }
+            System.exit(1);
+        }
+    }
 
     /**
      * Prints usage
@@ -269,52 +315,6 @@ public class SignPDF {
                 System.exit(1);
             }
         }
-    }
-
-    /**
-     * Parse given parameters, check if all necessary parameters exist and if there are not unnecessary parameters.
-     * If there are problems with parameters application will abort with exit code 1.
-     * After all checks are done signing process will start.
-     *
-     * @param params
-     */
-    private void runSigning(String[] params) {
-
-        parseParameters(params);
-        checkNecessaryParams();
-        checkUnnecessaryParams();
-
-        try {
-            //parse signature
-            if (signature.equals(Include.Signature.SIGN) && distinguishedName != null) {
-                signature = Include.Signature.ONDEMAND;
-            } else if (signature.equals(Include.Signature.SIGN) && distinguishedName == null) {
-                signature = Include.Signature.STATIC;
-            }
-
-            //start signing
-            Soap dss_soap = new Soap(verboseMode, debugMode, propertyFilePath);
-            dss_soap.sign(signature, pdfToSign, signedPDF, signingReason, signingLocation, signingContact, distinguishedName, msisdn, msg, language);
-        } catch (Exception e) {
-            if (debugMode || verboseMode) {
-                printError(e.getMessage().replaceAll("java.lang.Exception", "").length() > 0 ? e.getMessage() : "");
-            }
-            System.exit(1);
-        }
-    }
-
-    /**
-     * Main method to start AIS. This will parse given parameters e.g. input file, output file etc. and start signature
-     * process. Furthermore this method prints error message if signing failed. See usage part in README to know how to
-     * use it.
-     *
-     * @param args Arguments that will be parsed. See useage part in README for more details.
-     */
-    public static void main(String[] args) {
-
-        SignPDF ais = new SignPDF();
-        ais.runSigning(args);
-
     }
 
 }

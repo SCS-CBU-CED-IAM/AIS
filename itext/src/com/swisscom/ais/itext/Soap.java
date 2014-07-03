@@ -59,11 +59,6 @@ public class Soap {
     private static final String _TIMESTAMP_URN = "urn:ietf:rfc:3161";
 
     /**
-     * Constant for ocsp urn
-     */
-    private static final String _OCSP_URN = "urn:ietf:rfc:2560";
-
-    /**
      * Constant for mobile id type
      */
     private static final String _MOBILE_ID_TYPE = "http://ais.swisscom.ch/1.0/auth/mobileid/1.0";
@@ -106,12 +101,12 @@ public class Soap {
     /**
      * If set to true debug information will be print otherwise not
      */
-    private boolean _debug = false;
+    public static boolean _debugMode = false;
 
     /**
      * If set to true verbose information will be print otherwise not
      */
-    private boolean _verboseMode = false;
+    public static boolean _verboseMode = false;
 
     /**
      * Constructor. Set parameter and load properties from file. Connection properties will be set and check if all needed
@@ -124,8 +119,8 @@ public class Soap {
      */
     public Soap(boolean verboseOutput, boolean debugMode, @Nullable String propertyFilePath) throws FileNotFoundException {
 
-        this._verboseMode = verboseOutput;
-        this._debug = debugMode;
+        Soap._verboseMode = verboseOutput;
+        Soap._debugMode = debugMode;
 
         if (propertyFilePath != null) {
             _cfgPath = propertyFilePath;
@@ -183,9 +178,6 @@ public class Soap {
                      @Nullable String distinguishedName, @Nullable String msisdn, @Nullable String msg, @Nullable String language)
             throws Exception {
 
-        boolean addTimestamp = properties.getProperty("ADD_TIMESTAMP").trim().toLowerCase().equals("true");
-        boolean addOCSP = properties.getProperty("ADD_OCSP").trim().toLowerCase().equals("true");
-
         Include.HashAlgorithm hashAlgo = Include.HashAlgorithm.valueOf(properties.getProperty("DIGEST_METHOD").trim().toUpperCase());
 
         String claimedIdentity = properties.getProperty("CUSTOMER");
@@ -201,29 +193,35 @@ public class Soap {
             String requestId = getRequestId();
 
             if (msisdn != null && msg != null && language != null && signatureType.equals(Include.Signature.ONDEMAND)) {
-                if (_debug) {
+                if (_debugMode) {
                     System.out.println("Going to sign ondemand with mobile id");
                 }
-                signDocumentOnDemandCertMobileId(new PDF[]{pdf}, Calendar.getInstance(), hashAlgo, _url, addTimestamp,
-                        addOCSP, claimedIdentity, distinguishedName, msisdn, msg, language, requestId);
+                Calendar signingTime = Calendar.getInstance();
+                // Add 3 Minutes to move signing time within the OnDemand Certificate Validity
+                // This is only relevant in case the signature does not include a timestamp
+                signingTime.add(Calendar.MINUTE, 3); 
+                signDocumentOnDemandCertMobileId(new PDF[]{pdf}, signingTime, hashAlgo, _url, claimedIdentity, distinguishedName, msisdn, msg, language, requestId);
             } else if (signatureType.equals(Include.Signature.ONDEMAND)) {
-                if (_debug) {
+                if (_debugMode) {
                     System.out.println("Going to sign with ondemand");
                 }
-                signDocumentOnDemandCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, true,
-                        addTimestamp, addOCSP, distinguishedName, claimedIdentity, requestId);
+                Calendar signingTime = Calendar.getInstance();
+                // Add 3 Minutes to move signing time within the OnDemand Certificate Validity
+                // This is only relevant in case the signature does not include a timestamp
+                signingTime.add(Calendar.MINUTE, 3);
+                signDocumentOnDemandCert(new PDF[]{pdf}, hashAlgo, signingTime, _url, true,
+                        distinguishedName, claimedIdentity, requestId);
             } else if (signatureType.equals(Include.Signature.TIMESTAMP)) {
-                if (_debug) {
+                if (_debugMode) {
                     System.out.println("Going to sign only with timestamp");
                 }
-                signDocumentTimestampOnly(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, addOCSP, claimedIdentity,
+                signDocumentTimestampOnly(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, claimedIdentity,
                         requestId);
             } else if (signatureType.equals(Include.Signature.STATIC)) {
-                if (_debug) {
+                if (_debugMode) {
                     System.out.println("Going to sign with static cert");
                 }
-                signDocumentStaticCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, addTimestamp, addOCSP,
-                        claimedIdentity, requestId);
+                signDocumentStaticCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, claimedIdentity, requestId);
             } else {
                 throw new Exception("Wrong or missing parameters. Can not find a signature type.");
             }
@@ -239,8 +237,6 @@ public class Soap {
      * @param signDate          Date when document(s) will be signed
      * @param hashAlgo          Hash algorithm to use for signature
      * @param serverURI         Server uri where to send the request
-     * @param addTimestamp      If set to true timestamp will be added in signature otherwise not
-     * @param addOcsp           If set to true ocsp information will be add in signature otherwise not
      * @param claimedIdentity   Signers identity
      * @param distinguishedName Information about signer e.g. name, country etc.
      * @param phoneNumber       Number of phone when mobile id is used
@@ -250,7 +246,7 @@ public class Soap {
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentOnDemandCertMobileId(@Nonnull PDF pdfs[], @Nonnull Calendar signDate, @Nonnull Include.HashAlgorithm hashAlgo,
-                                                  @Nonnull String serverURI, boolean addTimestamp, boolean addOcsp, @Nonnull String claimedIdentity,
+                                                  @Nonnull String serverURI, @Nonnull String claimedIdentity,
                                                   @Nonnull String distinguishedName, @Nonnull String phoneNumber, @Nonnull String certReqMsg,
                                                   @Nonnull String certReqMsgLang, String requestId) throws Exception {
         String[] additionalProfiles;
@@ -263,7 +259,7 @@ public class Soap {
         }
         additionalProfiles[0] = Include.AdditionalProfiles.ON_DEMAND_CERTIFCATE.getProfileName();
 
-        int estimatedSize = getEstimatedSize(addTimestamp, addOcsp, true);
+        int estimatedSize = getEstimatedSize(false);
 
         byte[][] pdfHash = new byte[pdfs.length][];
         for (int i = 0; i < pdfs.length; i++) {
@@ -271,7 +267,7 @@ public class Soap {
         }
 
         SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), true,
-                pdfHash, addTimestamp ? _TIMESTAMP_URN : null, addOcsp ? _OCSP_URN : null, additionalProfiles,
+                pdfHash, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, _MOBILE_ID_TYPE, phoneNumber,
                 certReqMsg, certReqMsgLang, null, requestId);
 
@@ -286,17 +282,14 @@ public class Soap {
      * @param hashAlgo           Hash algorithm to use for signature
      * @param signDate           Date when document(s) will be signed
      * @param serverURI          Server uri where to send the request
-     * @param certRequestProfile Urn of certificate request profile
-     * @param addTimeStamp       If set to true timestamp will be added in signature otherwise not
-     * @param addOcsp            If set to true ocsp information will be add in signature otherwise not
+     * @param mobileIDStepUp     certificate request profile
      * @param distinguishedName  Information about signer e.g. name, country etc.
      * @param claimedIdentity    Signers identity
      * @param requestId          An id for the request
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentOnDemandCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                          @Nonnull boolean mobileIDStepUp, boolean addTimeStamp, boolean addOcsp,
-                                          @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
+                                          @Nonnull boolean mobileIDStepUp, @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         String[] additionalProfiles;
@@ -308,7 +301,7 @@ public class Soap {
         }
         additionalProfiles[0] = Include.AdditionalProfiles.ON_DEMAND_CERTIFCATE.getProfileName();
 
-        int estimatedSize = getEstimatedSize(addTimeStamp, addOcsp, true);
+        int estimatedSize = getEstimatedSize(false);
 
         byte[][] pdfHash = new byte[pdfs.length][];
         for (int i = 0; i < pdfs.length; i++) {
@@ -316,7 +309,7 @@ public class Soap {
         }
 
         SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), true,
-                pdfHash, addTimeStamp ? _TIMESTAMP_URN : null, addOcsp ? _OCSP_URN : null, additionalProfiles,
+                pdfHash, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, null, null, null, null, null, requestId);
 
         signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
@@ -325,18 +318,16 @@ public class Soap {
     /**
      * Create SOAP request message and sign document with static certificate
      *
-     * @param pdfs            Pdf input files
-     * @param hashAlgo        Hash algorithm to use for signature
-     * @param signDate        Date when document(s) will be signed
-     * @param serverURI       Server uri where to send the request
-     * @param addTimeStamp    If set to true timestamp will be added in signature otherwise not
-     * @param addOCSP         If set to true ocsp information will be add in signature otherwise not
-     * @param claimedIdentity Signers identity
-     * @param requestId       An id for the request
+     * @param pdfs              Pdf input files
+     * @param hashAlgo          Hash algorithm to use for signature
+     * @param signDate          Date when document(s) will be signed
+     * @param serverURI         Server uri where to send the request
+     * @param claimedIdentity   Signers identity
+     * @param requestId         An id for the request
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentStaticCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                        boolean addTimeStamp, boolean addOCSP, @Nonnull String claimedIdentity, String requestId)
+                                        @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         String[] additionalProfiles = null;
@@ -345,7 +336,7 @@ public class Soap {
             additionalProfiles[0] = Include.AdditionalProfiles.BATCH.getProfileName();
         }
 
-        int estimatedSize = getEstimatedSize(addTimeStamp, addOCSP, false);
+        int estimatedSize = getEstimatedSize(false);
 
         byte[][] pdfHash = new byte[pdfs.length][];
         for (int i = 0; i < pdfs.length; i++) {
@@ -353,7 +344,7 @@ public class Soap {
         }
 
         SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), false,
-                pdfHash, addTimeStamp ? _TIMESTAMP_URN : null, addOCSP ? _OCSP_URN : null, additionalProfiles,
+                pdfHash, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), null, null, null, null, null, null, requestId);
 
         signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
@@ -362,17 +353,16 @@ public class Soap {
     /**
      * Create SOAP request message and add a timestamp to pdf
      *
-     * @param pdfs            Pdf input files
-     * @param hashAlgo        Hash algorithm to use for signature
-     * @param signDate        Date when document(s) will be signed
-     * @param serverURI       Server uri where to send the request
-     * @param addOCSP         If set to true ocsp information will be add in signature otherwise not
-     * @param claimedIdentity Signers identity
-     * @param requestId       An id for the request
+     * @param pdfs              Pdf input files
+     * @param hashAlgo          Hash algorithm to use for signature
+     * @param signDate          Date when document(s) will be signed
+     * @param serverURI         Server uri where to send the request
+     * @param claimedIdentity   Signers identity
+     * @param requestId         An id for the request
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentTimestampOnly(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate,
-                                           @Nonnull String serverURI, boolean addOCSP, @Nonnull String claimedIdentity, String requestId)
+                                           @Nonnull String serverURI, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         Include.SignatureType signatureType = Include.SignatureType.TIMESTAMP;
@@ -386,7 +376,7 @@ public class Soap {
         }
         additionalProfiles[0] = Include.AdditionalProfiles.TIMESTAMP.getProfileName();
 
-        int estimatedSize = getEstimatedSize(true, addOCSP, false);
+        int estimatedSize = getEstimatedSize(true);
 
         byte[][] pdfHash = new byte[pdfs.length][];
         for (int i = 0; i < pdfs.length; i++) {
@@ -394,7 +384,7 @@ public class Soap {
         }
 
         SOAPMessage sigReqMsg = createRequestMessage(Include.RequestType.SignRequest, hashAlgo.getHashUri(), false,
-                pdfHash, null, addOCSP ? _OCSP_URN : null, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
+                pdfHash, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
                 null, null, null, null, null, null, requestId);
 
         signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "RFC3161TimeStampToken");
@@ -417,7 +407,7 @@ public class Soap {
         ArrayList<String> responseResult = getTextFromXmlText(sigResponse, "ResultMajor");
         boolean singingSuccess = sigResponse != null && responseResult != null && Include.RequestResult.Success.getResultUrn().equals(responseResult.get(0));
 
-        if (_debug || _verboseMode) {
+        if (_debugMode || _verboseMode) {
             //Getting pdf input file names for message output
             String pdfNames = "";
             for (int i = 0; i < pdfs.length; i++) {
@@ -497,30 +487,43 @@ public class Soap {
         if (!singingSuccess) {
             throw new Exception();
         }
+        
+        // Retrieve the Revocation Information (OCSP/CRL validation information)
+        ArrayList<String> crl = getTextFromXmlText(sigResponse, "sc:CRL");
+        ArrayList<String> ocsp = getTextFromXmlText(sigResponse, "sc:OCSP");
 
         ArrayList<String> signHashes = getTextFromXmlText(sigResponse, signNodeName);
-        signDocuments(signHashes, pdfs, estimatedSize);
+        signDocuments(signHashes, ocsp, crl, pdfs, estimatedSize);
     }
 
     /**
      * Add signature to pdf
      *
-     * @param signatureList Arraylist with Base64 encoded signatures
+     * @param signHashes    Arraylist with Base64 encoded signatures
+     * @param ocsp          Arraylist with Base64 encoded ocsp responses
+     * @param crl           Arraylist with Base64 encoded crl responses
      * @param pdfs          Pdf which will be signed
      * @param estimatedSize Estimated size of external signature
      * @throws Exception If adding signature to pdf failed.
      */
-    private void signDocuments(@Nonnull ArrayList<String> signatureList, @Nonnull PDF[] pdfs, int estimatedSize) throws Exception {
+    private void signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl, @Nonnull PDF[] pdfs, int estimatedSize) throws Exception {
         int counter = 0;
 
-        for (String signatureHash : signatureList) {
+        for (String signatureHash : signHashes) {
             try {
-                pdfs[counter].sign(signatureHash, estimatedSize);
+                pdfs[counter].createSignedPdf(Base64.decode(signatureHash), estimatedSize);
             } catch (Exception e) {
-                if (_debug) {
-                    System.err.println("Could not add signature hash to document");
+                if (_debugMode) {
+                    System.err.println("Could not add Signature to document");
                 }
-                throw new Exception(e);
+            }
+            
+            try {
+                pdfs[counter].addValidationInformation(ocsp, crl); // Add revocation information to enable Long Term Validation (LTV) in Adobe Reader
+            } catch (Exception e) {
+                if (_debugMode) {
+                    System.err.println("Could not add revocation information to document");
+                }
             }
 
             counter++;
@@ -593,10 +596,8 @@ public class Soap {
      *
      * @param reqType                  Type of request message e.g. singing or pending request
      * @param digestMethodAlgorithmURL Uri of hash algorithm
-     * @param certRequestProfile       Urn of certificate request profile. Only necessary when on demand certificate is needed
+     * @param mobileIDStepUp           certificate request profile. Only necessary when on demand certificate is needed
      * @param hashList                 Hashes from documents which should be signed
-     * @param timestampURN             Urn of timestamp if timestamp should be added
-     * @param ocspURN                  Urn of ocsp if ocsp information should be added
      * @param additionalProfiles       Urn of additional profiles e.g. ondemand certificate, timestamp signature, batch process etc.
      * @param claimedIdentity          Signers identity / profile
      * @param signatureType            Urn of signature type e.g. signature type cms or timestamp
@@ -612,7 +613,7 @@ public class Soap {
      * @throws IOException   If there is an error writing debug information
      */
     private SOAPMessage createRequestMessage(@Nonnull Include.RequestType reqType, @Nonnull String digestMethodAlgorithmURL,
-                                             boolean mobileIDStepUp, @Nonnull byte[][] hashList, String timestampURN, String ocspURN,
+                                             boolean mobileIDStepUp, @Nonnull byte[][] hashList,
                                              String[] additionalProfiles, String claimedIdentity,
                                              @Nonnull String signatureType, String distinguishedName,
                                              String mobileIdType, String phoneNumber, String certReqMsg, String certReqMsgLang,
@@ -664,7 +665,7 @@ public class Soap {
             digestValueElement.addTextNode(s);
         }
 
-        if (timestampURN != null || additionalProfiles != null || ocspURN != null || claimedIdentity != null || signatureType != null) {
+        if (additionalProfiles != null || claimedIdentity != null || signatureType != null) {
             SOAPElement optionalInputsElement = requestElement.addChildElement("OptionalInputs");
 
             SOAPElement additionalProfileelement;
@@ -707,15 +708,22 @@ public class Soap {
                 signatureTypeElement.addTextNode(signatureType);
             }
 
-            if (timestampURN != null && !signatureType.equals(_TIMESTAMP_URN)) {
-                SOAPElement addTimeStampelemtn = optionalInputsElement.addChildElement("AddTimestamp");
-                addTimeStampelemtn.addAttribute(new QName("Type"), timestampURN);
+            
+            if (!signatureType.equals(_TIMESTAMP_URN)) {
+                SOAPElement addTimeStampelement = optionalInputsElement.addChildElement("AddTimestamp");
+                addTimeStampelement.addAttribute(new QName("Type"), _TIMESTAMP_URN);
             }
 
-            if (ocspURN != null) {
-                SOAPElement addOcspElement = optionalInputsElement.addChildElement("AddOcspResponse", "sc");
-                addOcspElement.addAttribute(new QName("Type"), ocspURN);
-            }
+            // Always add revocation information
+            // PADES = CMS attribute according to PAdES (OID 1.2.840.113583.1.1.8)
+            // ALL   = OCSP Response or CRL for the signer-, CA- and Root-certificate but also for the Chain of OCSP and CRL Certs
+			SOAPElement addRevocationElement = optionalInputsElement.addChildElement("AddRevocationInformation", "sc");
+			addRevocationElement.addAttribute(new QName("Depth"), "ALL");
+			
+			// PADES-attributes are signed and cannot be post-added to a RFC3161-TimeStampToken
+			// So the RevocationInformation (RI) of a timestamp will be delivered via OptionalOutputs
+			// and they shall be added to the Adobe DSS in order to enable LTV for a Timestamp
+			addRevocationElement.addAttribute(new QName("Type"), "BOTH"); // CADES + PADES attributes
 
             if (responseId != null) {
                 SOAPElement responseIdElement = optionalInputsElement.addChildElement("ResponseID");
@@ -725,12 +733,12 @@ public class Soap {
 
         soapMessage.saveChanges();
 
-        if (_debug) {
+        if (_debugMode) {
             System.out.print("\nRequest SOAP Message:\n");
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
             soapMessage.writeTo(ba);
             String msg = new String(ba.toByteArray());
-            System.out.println(getPrettyFormatedXml(msg, 2) + "\n");
+            System.out.println(getPrettyFormatedXml(msg, 2));
         }
 
         return soapMessage;
@@ -747,7 +755,7 @@ public class Soap {
     @Nullable
     private String sendRequest(@Nonnull SOAPMessage soapMsg, @Nonnull String urlPath) throws Exception {
 
-        URLConnection conn = new Connect(urlPath, _privateKeyName, _serverCertPath, _clientCertPath, _timeout, _debug).getConnection();
+        URLConnection conn = new Connect(urlPath, _privateKeyName, _serverCertPath, _clientCertPath, _timeout, _debugMode).getConnection();
         if (conn instanceof HttpsURLConnection) {
             ((HttpsURLConnection) conn).setRequestMethod("POST");
         }
@@ -780,8 +788,8 @@ public class Soap {
             in.close();
         }
 
-        if (_debug) {
-            System.out.print("\nSOAP response message:\n" + getPrettyFormatedXml(response, 2) + "\n");
+        if (_debugMode) {
+            System.out.println("\nSOAP response message:\n" + getPrettyFormatedXml(response, 2));
         }
 
         return response;
@@ -790,18 +798,14 @@ public class Soap {
     /**
      * Calculate size of signature
      *
-     * @param useTimestmap       If timestamp should be add to a signature
-     * @param useOcsp            If ocsp information should be add to a signature
-     * @param certRequestProfile Is signature an ondemand signature
+     * @param sigType     Signature Type (TIMESTAMP,STATIC,ONDEMAND
      * @return Calculated size of external signature as int
      */
-    private int getEstimatedSize(boolean useTimestmap, boolean useOcsp, boolean certRequestProfile) {
-        int returnValue = 8192;
-        returnValue = useTimestmap ? returnValue + 4192 : returnValue;
-        returnValue = useOcsp ? returnValue + 4192 : returnValue;
-        returnValue = certRequestProfile ? returnValue + 700 : returnValue;
-
-        return returnValue;
+    private int getEstimatedSize(boolean isTimestampOnly) {
+    	if (isTimestampOnly)
+    		return 11000;
+    	else 
+    		return 26000;
     }
 
     /**

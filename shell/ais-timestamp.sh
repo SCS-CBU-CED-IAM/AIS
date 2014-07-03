@@ -124,7 +124,7 @@ case "$MSGTYPE" in
                           </ClaimedIdentity>
                           <SignatureType>urn:ietf:rfc:3161</SignatureType>
                           <AdditionalProfile>urn:oasis:names:tc:dss:1.0:profiles:timestamping</AdditionalProfile>
-                          <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
+                          <sc:AddRevocationInformation Depth="CHAIN" Type="BOTH"/>
                       </OptionalInputs>
                       <InputDocuments>
                           <DocumentHash>
@@ -152,7 +152,7 @@ case "$MSGTYPE" in
               </ClaimedIdentity>
               <SignatureType>urn:ietf:rfc:3161</SignatureType>
               <AdditionalProfile>urn:oasis:names:tc:dss:1.0:profiles:timestamping</AdditionalProfile>
-              <sc:AddOcspResponse Type="urn:ietf:rfc:2560"/>
+              <sc:AddRevocationInformation Depth="CHAIN" Type="BOTH"/>
           </OptionalInputs>
           <InputDocuments>
               <DocumentHash>
@@ -176,7 +176,7 @@ case "$MSGTYPE" in
               },
               "SignatureType": "urn:ietf:rfc:3161",
               "AdditionalProfile": "urn:oasis:names:tc:dss:1.0:profiles:timestamping",
-              "sc.AddOcspResponse": {"@Type": "urn:ietf:rfc:2560"}
+              "sc.AddRevocationInformation": {"@Depth": "CHAIN","@Type": "BOTH"}
           },
           "InputDocuments": {"DocumentHash": {
               "dsig.DigestMethod": {"@Algorithm": "'$DIGEST_ALGO'"},

@@ -40,6 +40,7 @@ ${#TestSuite#STATIC_ID}|Your ClaimedIdentity Key ID for Static Keys
 ${#TestSuite#ONDEMAND_QUALIFIED}|Your ClaimedIdentity Key ID for OnDemand Keys and enforced MID Auth
 ${#TestSuite#ONDEMAND_ADVANCED}|Your ClaimedIdentity Key ID for OnDemand Keys and optional MID Auth
 ${#TestSuite#MSISDN}|The Mobile Subscriber Number
+${#TestSuite#USER_ALERT}|Turn on ('true') or off ('false') user alert messages before any Mobile ID authentication
 ${#TestSuite#SHA256}|URI For SHA-256 Algorithm
 ${#TestSuite#SHA384}|URI For SHA-384 Algorithm
 ${#TestSuite#SHA512}|URI For SHA-512 Algorithm
