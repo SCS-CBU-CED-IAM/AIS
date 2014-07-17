@@ -715,14 +715,13 @@ public class Soap {
             }
 
             // Always add revocation information
-            // PADES = CMS attribute according to PAdES (OID 1.2.840.113583.1.1.8)
-            // CHAIN = OCSP Response or CRL for the user- and intermediate CA certificate
+            // Type="BOTH" means PADES+CADES
+            // PADES = signed attribute according to PAdES
+            // CADES = unsigned attribute according to CAdES
+            // PADES-attributes are signed and cannot be post-added to an already signed RFC3161-TimeStampToken
+            // So the RevocationInformation (RI) of a trusted timestamp will be delivered via OptionalOutputs
+         	// and they shall be added to the Adobe DSS in order to enable LTV for a Timestamp
 			SOAPElement addRevocationElement = optionalInputsElement.addChildElement("AddRevocationInformation", "sc");
-			addRevocationElement.addAttribute(new QName("Depth"), "CHAIN");
-			
-			// PADES-attributes are signed and cannot be post-added to a RFC3161-TimeStampToken
-			// So the RevocationInformation (RI) of a timestamp will be delivered via OptionalOutputs
-			// and they shall be added to the Adobe DSS in order to enable LTV for a Timestamp
 			addRevocationElement.addAttribute(new QName("Type"), "BOTH"); // CADES + PADES attributes
 
             if (responseId != null) {
