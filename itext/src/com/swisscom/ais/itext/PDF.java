@@ -61,6 +61,11 @@ public class PDF {
      * Save password from pdf
      */
     private String pdfPassword;
+    
+    /**
+     * Save signing reason
+     */
+    private String certificationLevel = null;
 
     /**
      * Save signing reason
@@ -102,13 +107,14 @@ public class PDF {
      * @param signLocation   Location for frOn signing
      * @param signContact    Contact for signing
      */
-    PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact) {
+    PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, String certificationLevel) {
         this.inputFilePath = inputFilePath;
         this.outputFilePath = outputFilePath;
         this.pdfPassword = pdfPassword;
         this.signReason = signReason;
         this.signLocation = signLocation;
         this.signContact = signContact;
+        this.certificationLevel = certificationLevel;
     }
 
     /**
@@ -151,6 +157,15 @@ public class PDF {
         pdfSignature.setDate(new PdfDate(signDate));
         pdfSignatureAppearance.setCryptoDictionary(pdfSignature);
 
+        if (certificationLevel != null) {
+        	try {
+				int level = Integer.parseInt(certificationLevel);
+				if (level >= 0 && level <= 3)
+					pdfSignatureAppearance.setCertificationLevel(level);
+			} catch (NumberFormatException e) {
+			}
+        }
+        	
         HashMap<PdfName, Integer> exc = new HashMap<PdfName, Integer>();
         exc.put(PdfName.CONTENTS, new Integer(estimatedSize * 2 + 2));
 

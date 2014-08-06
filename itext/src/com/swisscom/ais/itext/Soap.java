@@ -175,7 +175,8 @@ public class Soap {
      */
     public void sign(@Nonnull Include.Signature signatureType, @Nonnull String fileIn, @Nonnull String fileOut,
                      @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
-                     @Nullable String distinguishedName, @Nullable String msisdn, @Nullable String msg, @Nullable String language)
+                     @Nullable String certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn, 
+                     @Nullable String msg, @Nullable String language)
             throws Exception {
 
         Include.HashAlgorithm hashAlgo = Include.HashAlgorithm.valueOf(properties.getProperty("DIGEST_METHOD").trim().toUpperCase());
@@ -187,7 +188,7 @@ public class Soap {
             claimedIdentity = claimedIdentity.concat(":" + properties.getProperty(claimedIdentityPropName));
         }
 
-        PDF pdf = new PDF(fileIn, fileOut, null, signingReason, signingLocation, signingContact);
+        PDF pdf = new PDF(fileIn, fileOut, null, signingReason, signingLocation, signingContact, certificationLevel);
 
         try {
             String requestId = getRequestId();
@@ -493,7 +494,7 @@ public class Soap {
         ArrayList<String> ocsp = getTextFromXmlText(sigResponse, "sc:OCSP");
 
         ArrayList<String> signHashes = getTextFromXmlText(sigResponse, signNodeName);
-        signDocuments(signHashes, ocsp, crl, pdfs, estimatedSize);
+        signDocuments(signHashes, ocsp, crl, pdfs, estimatedSize, signNodeName.equals("RFC3161TimeStampToken"));
     }
 
     /**
@@ -506,7 +507,7 @@ public class Soap {
      * @param estimatedSize Estimated size of external signature
      * @throws Exception If adding signature to pdf failed.
      */
-    private void signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl, @Nonnull PDF[] pdfs, int estimatedSize) throws Exception {
+    private void signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl, @Nonnull PDF[] pdfs, int estimatedSize, boolean timestampOnly) throws Exception {
         int counter = 0;
 
         for (String signatureHash : signHashes) {
@@ -519,7 +520,9 @@ public class Soap {
             }
             
             try {
-                pdfs[counter].addValidationInformation(ocsp, crl); // Add revocation information to enable Long Term Validation (LTV) in Adobe Reader
+            	// Add external revocation information to DSS Dictionary, to enable Long Term Validation (LTV) in Adobe Reader
+            	if ( timestampOnly )
+            		pdfs[counter].addValidationInformation(ocsp, crl);
             } catch (Exception e) {
                 if (_debugMode) {
                     System.err.println("Could not add revocation information to document");
@@ -797,7 +800,7 @@ public class Soap {
     /**
      * Calculate size of signature
      *
-     * @param sigType     Signature Type (TIMESTAMP,STATIC,ONDEMAND
+     * @param isTimestampOnly    
      * @return Calculated size of external signature as int
      */
     private int getEstimatedSize(boolean isTimestampOnly) {

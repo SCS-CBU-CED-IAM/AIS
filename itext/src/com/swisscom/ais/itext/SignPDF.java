@@ -71,6 +71,11 @@ public class SignPDF {
      * Person who signed the document
      */
     String signingContact = null;
+    
+    /**
+     * Certification Level
+     */
+    String certificationLevel = null;
 
     /**
      * Distinguished name contains information about signer. Needed for ondemand signature
@@ -134,7 +139,7 @@ public class SignPDF {
 
             //start signing
             Soap dss_soap = new Soap(verboseMode, debugMode, propertyFilePath);
-            dss_soap.sign(signature, pdfToSign, signedPDF, signingReason, signingLocation, signingContact, distinguishedName, msisdn, msg, language);
+            dss_soap.sign(signature, pdfToSign, signedPDF, signingReason, signingLocation, signingContact, certificationLevel, distinguishedName, msisdn, msg, language);
         } catch (Exception e) {
             if (debugMode || verboseMode) {
                 printError(e.getMessage().replaceAll("java.lang.Exception", "").length() > 0 ? e.getMessage() : "");
@@ -159,6 +164,7 @@ public class SignPDF {
         System.out.println("  -reason=VALUE     - signing reason");
         System.out.println("  -location=VALUE   - signing location");
         System.out.println("  -contact=VALUE    - signing contact");
+        System.out.println("  -certlevel=VALUE  - author signature, values: 1 (no changes allowed), 2 (form filling allowed), 3 (form filling and annotations allowed)");
         System.out.println("  -dn=VALUE         - distinguished name for OnDemand certificate signing");
         System.out.println("  -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)");
         System.out.println("  -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)");
@@ -167,7 +173,7 @@ public class SignPDF {
         System.out.println("Examples:");
         System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
         System.out.println("  java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com");
-        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'");
+        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -certlevel=1 -dn='cn=Hans Muster,o=ACME,c=CH'");
         System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en");
     }
 
@@ -247,6 +253,8 @@ public class SignPDF {
                 signingLocation = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-contact")) {
                 signingContact = args[i].substring(args[i].indexOf("=") + 1).trim();
+            } else if (param.contains("-certlevel")) {
+                certificationLevel = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-dn=")) {
                 distinguishedName = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-msisdn=")) {

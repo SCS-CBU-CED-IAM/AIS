@@ -18,6 +18,7 @@ Options:
   -reason=VALUE     - signing reason
   -location=VALUE   - signing location
   -contact=VALUE    - signing contact
+  -certlevel=VALUE  - author signature, values: 1 (no changes allowed), 2 (form filling allowed), 3 (form filling and annotations allowed)
   -dn=VALUE         - distinguished name for OnDemand certificate signing
   -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)
   -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)
@@ -26,8 +27,9 @@ Options:
 Examples:
   java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf
   java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com
-  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH'
+  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -certlevel=1 -dn='cn=Hans Muster,o=ACME,c=CH'
   java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en
+
 ```
 
 #### Dependencies
