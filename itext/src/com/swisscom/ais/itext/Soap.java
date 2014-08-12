@@ -175,7 +175,7 @@ public class Soap {
      */
     public void sign(@Nonnull Include.Signature signatureType, @Nonnull String fileIn, @Nonnull String fileOut,
                      @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
-                     @Nullable String certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn, 
+                     @Nullable int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn, 
                      @Nullable String msg, @Nullable String language)
             throws Exception {
 
@@ -418,9 +418,9 @@ public class Soap {
             }
 
             if (!singingSuccess) {
-                System.err.print("FAILED to sign " + pdfNames);
+                System.out.print("FAILED to get successful AIS SigResponse for " + pdfNames);
             } else {
-                System.out.print("OK signing " + pdfNames);
+                System.out.print("SUCCEEDED to get AIS SigResponse for " + pdfNames);
             }
 
             if (sigResponse != null) {
@@ -434,7 +434,7 @@ public class Soap {
 
                     if (responseResult != null || resultMinor != null || errorMsg != null) {
                         if (!singingSuccess) {
-                            System.err.println(" with following details:");
+                            System.out.println(" with following details:");
                         } else {
                             System.out.println(" with following details:");
                         }
@@ -444,7 +444,7 @@ public class Soap {
                         for (String s : responseResult) {
                             if (s.length() > 0) {
                                 if (!singingSuccess) {
-                                    System.err.println(" Result major: " + s);
+                                    System.out.println(" Result major: " + s);
                                 } else {
                                     System.out.println(" Result major: " + s);
                                 }
@@ -456,7 +456,7 @@ public class Soap {
                         for (String s : resultMinor) {
                             if (s.length() > 0) {
                                 if (!singingSuccess) {
-                                    System.err.println(" Result minor: " + s);
+                                    System.out.println(" Result minor: " + s);
                                 } else {
                                     System.out.println(" Result minor: " + s);
                                 }
@@ -468,7 +468,7 @@ public class Soap {
                         for (String s : errorMsg) {
                             if (s.length() > 0) {
                                 if (!singingSuccess) {
-                                    System.err.println(" Result message: " + s);
+                                    System.out.println(" Result message: " + s);
                                 } else {
                                     System.out.println(" Result message: " + s);
                                 }
@@ -479,7 +479,7 @@ public class Soap {
             }
             //we need a line break
             if (!singingSuccess) {
-                System.err.println("");
+                System.out.println("");
             } else {
                 System.out.println("");
             }
@@ -509,26 +509,13 @@ public class Soap {
      */
     private void signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl, @Nonnull PDF[] pdfs, int estimatedSize, boolean timestampOnly) throws Exception {
         int counter = 0;
-
         for (String signatureHash : signHashes) {
-            try {
-                pdfs[counter].createSignedPdf(Base64.decode(signatureHash), estimatedSize);
-            } catch (Exception e) {
-                if (_debugMode) {
-                    System.err.println("Could not add Signature to document");
-                }
-            }
-            
-            try {
-            	// Add external revocation information to DSS Dictionary, to enable Long Term Validation (LTV) in Adobe Reader
-            	if ( timestampOnly )
-            		pdfs[counter].addValidationInformation(ocsp, crl);
-            } catch (Exception e) {
-                if (_debugMode) {
-                    System.err.println("Could not add revocation information to document");
-                }
-            }
-
+        	
+			pdfs[counter].createSignedPdf(Base64.decode(signatureHash), estimatedSize);
+			
+			if (timestampOnly)
+				pdfs[counter].addValidationInformation(ocsp, crl);;
+				
             counter++;
         }
     }

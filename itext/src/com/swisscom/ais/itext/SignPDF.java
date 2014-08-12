@@ -75,7 +75,7 @@ public class SignPDF {
     /**
      * Certification Level
      */
-    String certificationLevel = null;
+    int certificationLevel = 0;
 
     /**
      * Distinguished name contains information about signer. Needed for ondemand signature
@@ -147,34 +147,82 @@ public class SignPDF {
             System.exit(1);
         }
     }
+    
+    private void printUsage() {
+    	printUsage(null);
+    }
 
     /**
-     * Prints usage
+     * Prints usage and exits
      */
-    public static void printUsage() {
-        System.out.println("Usage: com.swisscom.ais.itext.SignPDF [OPTIONS]");
+    private void printUsage(String error) {
+    	if (error != null && (debugMode || verboseMode)) {
+    		printError(error);
+    	}
+        System.out.println("\nUsage: com.swisscom.ais.itext.SignPDF [OPTIONS]");
         System.out.println();
-        System.out.println("Options:");
-        System.out.println("  -v                - set verbose output");
-        System.out.println("  -d                - set debug mode");
-        System.out.println("  -config=VALUE     - custom path to properties file which will overwrite default path");
-        System.out.println("  -type=VALUE       - signature type, values: timestamp, sign");
-        System.out.println("  -infile=VALUE     - source PDF file to be signed");
-        System.out.println("  -outfile=VALUE    - target PDF file that will be signed");
+        System.out.println("OPTIONS");
+        System.out.println();
+        System.out.println("  [mandatory]");
+        System.out.println("  -type=VALUE       - signature type");
+        System.out.println("                       supported values:");
+        System.out.println("                       - timestamp (add timestamp only)");
+        System.out.println("                       - sign      (add cms signature incl. timestamp)");
+        System.out.println("  -infile=VALUE     - input filename of the pdf to be signed");
+        System.out.println("  -outfile=VALUE    - output filename for the signed pdf");
+        System.out.println();
+        System.out.println("  [optional]");
+        System.out.println("  -v                - verbose output");
+        System.out.println("  -vv               - more verbose output");
+        System.out.println("  -config=VALUE     - custom path to properties file, overwrites default path");
         System.out.println("  -reason=VALUE     - signing reason");
         System.out.println("  -location=VALUE   - signing location");
         System.out.println("  -contact=VALUE    - signing contact");
-        System.out.println("  -certlevel=VALUE  - author signature, values: 1 (no changes allowed), 2 (form filling allowed), 3 (form filling and annotations allowed)");
-        System.out.println("  -dn=VALUE         - distinguished name for OnDemand certificate signing");
-        System.out.println("  -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)");
-        System.out.println("  -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)");
-        System.out.println("  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msisdn -msg)");
+        System.out.println("  -certlevel=VALUE  - certify the pdf, at most one certification per pdf is allowed");
+        System.out.println("                       supported values:");
+        System.out.println("                       - 1 (no changes allowed)");
+        System.out.println("                       - 2 (form filling and further signing allowed)");
+        System.out.println("                       - 3 (form filling, annotations and further signing allowed)");    
+        System.out.println("  -dn=VALUE         - distinguished name, for personal on demand certificate signing");
+        System.out.println("                       supported attributes, separated by commas:");
+        System.out.println("                       [mandatory]");
+        System.out.println("                       - cn / commonname ");
+        System.out.println("                       - c / countryname");
+        System.out.println("                       [optional]");
+        System.out.println("                       - emailaddress");
+        System.out.println("                       - givenname");
+        System.out.println("                       - l / localityname");
+        System.out.println("                       - ou / organizationalunitname");
+        System.out.println("                       - o / organizationname");
+        System.out.println("                       - serialnumber");
+        System.out.println("                       - st / stateorprovincename");
+        System.out.println("                       - sn / surname");
+        System.out.println("  -msisdn=VALUE     - mobileid step up phone number            (requires -dn -msg -lang)");
+        System.out.println("  -msg=VALUE        - mobileid step up message to be displayed (requires -dn -msisdn -lang)");
+        System.out.println("  -lang=VALUE       - mobileid step up language                (requires -dn -msisdn -msg)");
+        System.out.println("                       supported values:");
+        System.out.println("                       - en (english)");
+        System.out.println("                       - de (deutsch)");
+        System.out.println("                       - fr (français)");
+        System.out.println("                       - it (italiano)");
         System.out.println();
-        System.out.println("Examples:");
-        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
-        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com");
-        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -certlevel=1 -dn='cn=Hans Muster,o=ACME,c=CH'");
-        System.out.println("  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en");
+        System.out.println("EXAMPLES");
+        System.out.println();
+        System.out.println("  [timestamp]");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf");
+        System.out.println();
+        System.out.println("  [sign with static certificate]");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -type=sign -infile=sample.pdf -outfile=signed.pdf");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=Berne -contact=alice@acme.com");
+        System.out.println();
+        System.out.println("  [sign with on demand certificate]");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH'");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -certlevel=1");
+        System.out.println();
+        System.out.println("  [sign with OnDemand certificate and Mobile ID step up]");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF?' -lang=en");
+        System.exit(1);
     }
 
     /**
@@ -182,8 +230,10 @@ public class SignPDF {
      *
      * @param error Message that should print
      */
-    public static void printError(@Nonnull String error) {
-        System.err.println(error);
+    private void printError(@Nonnull String error) {
+    	// do not use error output stream to ensure proper order of all println's
+    	if (error != null && error != "")
+    		System.out.println("Error: " + error);
     }
 
     /**
@@ -192,13 +242,11 @@ public class SignPDF {
      * @param args
      */
     private void parseParameters(String[] args) {
+    	
+    	// args can never be null. It would just be of size zero.
+
         String param;
-
-        if (args == null || args.length < 3) {
-            printUsage();
-            System.exit(1);
-        }
-
+        boolean type = false, infile = false, outfile = false; 
         for (int i = 0; i < args.length; i++) {
 
             param = args[i].toLowerCase();
@@ -208,45 +256,44 @@ public class SignPDF {
                 try {
                     signatureString = args[i].substring(args[i].indexOf("=") + 1).trim().toUpperCase();
                     signature = Include.Signature.valueOf(signatureString);
+                    type = true;
                 } catch (IllegalArgumentException e) {
                     if (debugMode || verboseMode) {
                         printError(signatureString + " is not a valid signature.");
                     }
                     printUsage();
-                    System.exit(1);
                 }
             } else if (param.contains("-infile=")) {
                 pdfToSign = args[i].substring(args[i].indexOf("=") + 1).trim();
                 File pdfToSignFile = new File(pdfToSign);
-
                 if (!pdfToSignFile.isFile() || !pdfToSignFile.canRead()) {
                     if (debugMode || verboseMode) {
                         printError("File " + pdfToSign + " is not a file or can not be read.");
                     }
                     System.exit(1);
                 }
-            } else if (param.contains("-outfile=")) {
-                signedPDF = args[i].substring(args[i].indexOf("=") + 1).trim();
-                String errorMsg = null;
-
-                if (signedPDF.equals(pdfToSign)) {
-                    errorMsg = "Source file equals target file.";
-                } else if (new File(signedPDF).isFile()) {
-                    errorMsg = "Target file exists.";
-                } else {
-                    try {
-			new File(signedPDF);
-		    } catch (Exception e) {
-			errorMsg = "Can not create target file in given path.";
-		    }
+                infile = true;
+			} else if (param.contains("-outfile=")) {
+				signedPDF = args[i].substring(args[i].indexOf("=") + 1).trim();
+				String errorMsg = null;
+				if (signedPDF.equals(pdfToSign)) {
+					errorMsg = "Source file equals target file.";
+				} else if (new File(signedPDF).isFile()) {
+					errorMsg = "Target file exists.";
+				} else {
+					try {
+						new File(signedPDF);
+					} catch (Exception e) {
+						errorMsg = "Can not create target file in given path.";
+					}
+				}
+				if (errorMsg != null) {
+					if (debugMode || verboseMode) {
+						printError(errorMsg);
+					}
+					System.exit(1);
                 }
-                
-                if (errorMsg != null) {
-                    if (debugMode || verboseMode) {
-                        printError(errorMsg);
-                    }
-                    System.exit(1);
-                }
+				outfile = true;
             } else if (param.contains("-reason")) {
                 signingReason = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-location")) {
@@ -254,7 +301,15 @@ public class SignPDF {
             } else if (param.contains("-contact")) {
                 signingContact = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-certlevel")) {
-                certificationLevel = args[i].substring(args[i].indexOf("=") + 1).trim();
+                try {
+                	certificationLevel = Integer.parseInt(args[i].substring(args[i].indexOf("=") + 1).trim());
+    				if (certificationLevel < 1 || certificationLevel > 3)
+    					throw new Exception();
+    			} catch (Exception e) {
+    				if (debugMode || verboseMode) {
+                        printUsage("-certlevel value not between 1..3");
+                    }
+    			}
             } else if (param.contains("-dn=")) {
                 distinguishedName = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-msisdn=")) {
@@ -272,12 +327,22 @@ public class SignPDF {
                     }
                     System.exit(1);
                 }
-            } else if (args[i].toLowerCase().contains("-v")) {
-                verboseMode = true;
-            } else if (param.contains("-d")) {
-                debugMode = true;
+            } else if (args[i].toLowerCase().contains("-vv")) {
+            	debugMode = true;
+            } else if (param.contains("-v")) {
+            	verboseMode = true;
             }
         }
+        
+        // Check existence of mandatory arguments
+        if (!type) {
+        	printUsage("Mandatory option -type is missing");
+        } else if (!infile) {
+        	printUsage("Mandatory option -infile is missing");
+        } else if (!outfile) {
+        	printUsage("Mandatory option -outfile is missing");
+        } 
+        
     }
 
     /**
@@ -311,7 +376,6 @@ public class SignPDF {
                 if (debugMode || verboseMode) {
                     printUsage();
                 }
-                System.exit(1);
             }
         } else {
             if (!(distinguishedName == null && msisdn == null && msg == null && language == null ||
@@ -320,7 +384,6 @@ public class SignPDF {
                 if (debugMode || verboseMode) {
                     printUsage();
                 }
-                System.exit(1);
             }
         }
     }

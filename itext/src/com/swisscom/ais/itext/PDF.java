@@ -22,7 +22,6 @@
 
 package com.swisscom.ais.itext;
 
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.codec.Base64;
 import com.itextpdf.text.pdf.security.*;
@@ -30,13 +29,10 @@ import com.itextpdf.text.pdf.security.*;
 import javax.annotation.Nonnull;
 
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
-import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 
 import java.io.*;
-import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.util.ArrayList;
@@ -65,7 +61,7 @@ public class PDF {
     /**
      * Save signing reason
      */
-    private String certificationLevel = null;
+    private int certificationLevel = 0;
 
     /**
      * Save signing reason
@@ -81,6 +77,11 @@ public class PDF {
      * Save signing contact
      */
     private String signContact;
+    
+    /**
+     * Save PdfReader
+     */
+    private PdfReader pdfReader = null;
 
     /**
      * Save signature appearance from pdf
@@ -91,6 +92,11 @@ public class PDF {
      * Save pdf signature
      */
     private PdfSignature pdfSignature;
+    
+    /**
+     * Save pdfStamper
+     */
+    private PdfStamper pdfStamper;
 
     /**
      * Save byte array outputstream for writing pdf file
@@ -107,7 +113,7 @@ public class PDF {
      * @param signLocation   Location for frOn signing
      * @param signContact    Contact for signing
      */
-    PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, String certificationLevel) {
+    PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
         this.inputFilePath = inputFilePath;
         this.outputFilePath = outputFilePath;
         this.pdfPassword = pdfPassword;
@@ -134,19 +140,16 @@ public class PDF {
      * @param hashAlgorithm   The hash algorithm which will be used to sign the pdf
      * @param isTimestampOnly If it is a timestamp signature. This is necessary because the filter is an other one compared to a "standard" signature
      * @return Hash of pdf as bytes
-     * @throws IOException              If the input file can not be readed
-     * @throws DocumentException        If PdfStamper can not create the signature or signature appearance can not be preclosed
-     * @throws NoSuchAlgorithmException If no Provider supports a MessageDigest implementation for the specified algorithm.
+     * @throws Exception 
      */
     public byte[] getPdfHash(@Nonnull Calendar signDate, int estimatedSize, @Nonnull String hashAlgorithm, boolean isTimestampOnly)
-            throws IOException, DocumentException, NoSuchAlgorithmException {
+            throws Exception {
 
-        PdfReader pdfReader = null;
         pdfReader = new PdfReader(inputFilePath, pdfPassword != null ? pdfPassword.getBytes() : null);
         AcroFields acroFields = pdfReader.getAcroFields();
         boolean hasSignature = acroFields.getSignatureNames().size() > 0;
         byteArrayOutputStream = new ByteArrayOutputStream();
-        PdfStamper pdfStamper = PdfStamper.createSignature(pdfReader, byteArrayOutputStream, '\0', null, hasSignature);
+        pdfStamper = PdfStamper.createSignature(pdfReader, byteArrayOutputStream, '\0', null, hasSignature);
         pdfStamper.setXmpMetadata(pdfReader.getMetadata());
 
         pdfSignatureAppearance = pdfStamper.getSignatureAppearance();
@@ -156,14 +159,13 @@ public class PDF {
         pdfSignature.setContact(signContact);
         pdfSignature.setDate(new PdfDate(signDate));
         pdfSignatureAppearance.setCryptoDictionary(pdfSignature);
-
-        if (certificationLevel != null) {
-        	try {
-				int level = Integer.parseInt(certificationLevel);
-				if (level >= 0 && level <= 3)
-					pdfSignatureAppearance.setCertificationLevel(level);
-			} catch (NumberFormatException e) {
-			}
+        
+		// certify the pdf, if requested
+		if (certificationLevel > 0) {
+			// check: at most one certification per pdf is allowed
+			if (pdfReader.getCertificationLevel() != PdfSignatureAppearance.NOT_CERTIFIED)
+				throw new Exception("Could not apply -certlevel option. At most one certification per pdf is allowed, but source pdf contained already a certification.");
+			pdfSignatureAppearance.setCertificationLevel(certificationLevel);        		 		
         }
         	
         HashMap<PdfName, Integer> exc = new HashMap<PdfName, Integer>();
@@ -186,11 +188,13 @@ public class PDF {
      *
      * @param externalSignature  The extern generated signature
      * @param estimatedSize      Size of external signature
-     * @throws IOException       If estimated size is to small, signature appearance can not be closed or output file can not be written
-     * @throws DocumentException If signature appearance can not be closed
+     * @throws Exception 
      */
-    public void createSignedPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws IOException, DocumentException {
-
+    public void createSignedPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws Exception {
+    	// Check if source pdf is not protected by a certification
+    	if (pdfReader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
+    		throw new Exception("Could not apply signature because source file contains a certification that does not allow any changes to the document");
+    	
     	if (Soap._debugMode) {
     		System.out.println("\nEstimated SignatureSize: " + estimatedSize);
     		System.out.println("Actual    SignatureSize: " + externalSignature.length);
@@ -216,37 +220,39 @@ public class PDF {
         byteArrayOutputStream.writeTo(outputStream);
         
         if (Soap._debugMode) {
-	    	System.out.println("\nOK writing to " + outputFilePath);
+	    	System.out.println("\nOK writing signature to " + outputFilePath);
 	    }
         
         byteArrayOutputStream.close();
         outputStream.close();
     }
 	
-	/**
+	/** 
+	 * Add external revocation information to DSS Dictionary, to enable Long Term Validation (LTV) in Adobe Reader
+	 * 
 	 * @param ocspArr List of OCSP Responses as base64 encoded String
 	 * @param crlArr  List of CRLs as base64 encoded String
-	 * @throws IOException
-	 * @throws DocumentException
-	 * @throws GeneralSecurityException
-	 * @throws OCSPException
+	 * @throws Exception 
 	 */
-	public void addValidationInformation(ArrayList<String> ocspArr, ArrayList<String> crlArr) throws IOException, DocumentException, GeneralSecurityException, OCSPException {
+	public void addValidationInformation(ArrayList<String> ocspArr, ArrayList<String> crlArr) throws Exception {
 		if (ocspArr == null && crlArr == null)
 			return;
 		
+		PdfReader reader = new PdfReader(outputFilePath);
+		
+		// Check if source pdf is not protected by a certification
+    	if (reader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
+    		throw new Exception("Could not apply revocation information (LTV) to the DSS Dictionary. Document contains a certification that does not allow any changes.");
+    	
 		Collection<byte[]> ocspColl = new ArrayList<byte[]>();
 		Collection<byte[]> crlColl = new ArrayList<byte[]>();
 
-		OCSPResp ocspResp = null;
-		BasicOCSPResp basicResp = null;
-		
 		// Decode each OCSP Response (String of base64 encoded form) and add it to the Collection (byte[])
 		if (ocspArr != null) {
 			for (String ocspBase64 : ocspArr) {
-				ocspResp = new OCSPResp(new ByteArrayInputStream(Base64.decode(ocspBase64)));
-				basicResp = (BasicOCSPResp) ocspResp.getResponseObject();
-				
+				OCSPResp ocspResp = new OCSPResp(new ByteArrayInputStream(Base64.decode(ocspBase64)));
+				BasicOCSPResp basicResp = (BasicOCSPResp) ocspResp.getResponseObject();
+
 				if (Soap._debugMode) {
 					System.out.println("\nEmbedding OCSP Response...");
 					System.out.println("Status                : " + ((ocspResp.getStatus() == 0) ? "GOOD" : "BAD"));
@@ -256,65 +262,64 @@ public class PDF {
 					System.out.println("X509 Cert Issuer      : " + basicResp.getCerts()[0].getIssuer());
 					System.out.println("X509 Cert Subject     : " + basicResp.getCerts()[0].getSubject());
 					System.out.println("Responder ID X500Name : " + basicResp.getResponderId().toASN1Object().getName());
-					System.out.println("Certificate ID        : " + basicResp.getResponses()[0].getCertID().getSerialNumber().toString() + 
-							" (" + basicResp.getResponses()[0].getCertID().getSerialNumber().toString(16).toUpperCase() + ")");
+					System.out.println("Certificate ID        : " + basicResp.getResponses()[0].getCertID().getSerialNumber().toString() + " ("
+							+ basicResp.getResponses()[0].getCertID().getSerialNumber().toString(16).toUpperCase() + ")");
 				}
-					
-				ocspColl.add(basicResp.getEncoded()); // Add Basic OCSP Response to Collection (ASN.1 encoded representation of this object) 
-			}			
+
+				ocspColl.add(basicResp.getEncoded()); // Add Basic OCSP Response to Collection (ASN.1 encoded representation of this object)
+			}
 		}
-		
-		
-		X509CRL x509crl = null;
-		
+
 		// Decode each CRL (String of base64 encoded form) and add it to the Collection (byte[])
 		if (crlArr != null) {
-			for (String crlBase64 : crlArr) {		
-				x509crl = (X509CRL) CertificateFactory.getInstance("X.509").generateCRL(new ByteArrayInputStream(Base64.decode(crlBase64)));
-				
+			for (String crlBase64 : crlArr) {
+				X509CRL x509crl = (X509CRL) CertificateFactory.getInstance("X.509").generateCRL(new ByteArrayInputStream(Base64.decode(crlBase64)));
+
 				if (Soap._debugMode) {
 					System.out.println("\nEmbedding CRL...");
 					System.out.println("IssuerDN                    : " + x509crl.getIssuerDN());
 					System.out.println("This Update                 : " + x509crl.getThisUpdate());
 					System.out.println("Next Update                 : " + x509crl.getNextUpdate());
-					System.out.println("No. of Revoked Certificates : " + ((x509crl.getRevokedCertificates() == null) ? "0" : x509crl.getRevokedCertificates().size()));
+					System.out.println("No. of Revoked Certificates : "
+							+ ((x509crl.getRevokedCertificates() == null) ? "0" : x509crl.getRevokedCertificates().size()));
 				}
-				
+
 				crlColl.add(x509crl.getEncoded()); // Add CRL to Collection (ASN.1 DER-encoded form of this CRL)
 			}
 		}
-		
-		PdfReader reader = new PdfReader(outputFilePath);
 
 		byteArrayOutputStream = new ByteArrayOutputStream();
 		PdfStamper stamper = new PdfStamper(reader, byteArrayOutputStream, '\0', true);
-	    LtvVerification validation = stamper.getLtvVerification();
-	    
-	    // Add the CRL/OCSP validation information to the DSS Dictionary
-	    for (String sigName : stamper.getAcroFields().getSignatureNames()){
-	        validation.addVerification(
-	        	sigName,  // Signature Name
-	        	ocspColl, // OCSP
-	        	crlColl,  // CRL
-	        	null      // certs
-	        );
-	    }
-	    
-	    validation.merge(); // Merges the validation with any validation already in the document or creates a new one.
-	    
-	    stamper.close();
-	    reader.close();
-	    
-	    // Save to (same) file
-	    OutputStream outputStream = new FileOutputStream (outputFilePath); 
-	    byteArrayOutputStream.writeTo(outputStream);	    
-	    
-	    if (Soap._debugMode) {
-	    	System.out.println("\nOK merging LTV validation information to " + outputFilePath);
-	    }
-	    
-	    byteArrayOutputStream.close();
-	    outputStream.close();  
-	}
+		LtvVerification validation = stamper.getLtvVerification();
 
+		// Add the CRL/OCSP validation information to the DSS Dictionary
+		boolean addVerification = false;
+		for (String sigName : stamper.getAcroFields().getSignatureNames()) {
+			addVerification = validation.addVerification(
+					sigName, // Signature Name
+					ocspColl, // OCSP
+					crlColl, // CRL
+					null // certs
+					);
+		}
+
+		validation.merge(); // Merges the validation with any validation already in the document or creates a new one.
+
+		stamper.close();
+		reader.close();
+
+		// Save to (same) file
+		OutputStream outputStream = new FileOutputStream (outputFilePath);
+		byteArrayOutputStream.writeTo(outputStream);
+
+		if (Soap._debugMode) {
+			if (addVerification)
+				System.out.println("\nOK merging LTV validation information to " + outputFilePath);
+			else
+				System.out.println("\nFAILED merging LTV validation information to " + outputFilePath);
+		}
+
+		byteArrayOutputStream.close();
+		outputStream.close();
+	}
 }
