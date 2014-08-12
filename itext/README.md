@@ -8,28 +8,67 @@ Java source code and command line tool to sign PDF with iText.
 ````
 Usage: com.swisscom.ais.itext.SignPDF [OPTIONS]
 
-Options:
-  -v                - set verbose output
-  -d                - set debug mode
-  -config=VALUE     - custom path to properties file which will overwrite default path
-  -type=VALUE       - signature type, values: timestamp, sign
-  -infile=VALUE     - source PDF file to be signed
-  -outfile=VALUE    - target PDF file that will be signed
+OPTIONS
+
+  [mandatory]
+  -type=VALUE       - signature type
+                       supported values:
+                       - timestamp (add timestamp only)
+                       - sign      (add cms signature incl. timestamp)
+  -infile=VALUE     - input filename of the pdf to be signed
+  -outfile=VALUE    - output filename for the signed pdf
+
+  [optional]
+  -v                - verbose output
+  -vv               - more verbose output
+  -config=VALUE     - custom path to properties file, overwrites default path
   -reason=VALUE     - signing reason
   -location=VALUE   - signing location
   -contact=VALUE    - signing contact
-  -certlevel=VALUE  - author signature, values: 1 (no changes allowed), 2 (form filling allowed), 3 (form filling and annotations allowed)
-  -dn=VALUE         - distinguished name for OnDemand certificate signing
-  -msisdn=VALUE     - Mobile ID step up MSISDN (requires -dn -msg -lang)
-  -msg=VALUE        - Mobile ID step up message (requires -dn -msisdn -lang)
-  -lang=VALUE       - Mobile ID step up language, values: en, de, fr, it (requires -dn -msisdn -msg)
+  -certlevel=VALUE  - certify the pdf, at most one certification per pdf is allowed
+                       supported values:
+                       - 1 (no changes allowed)
+                       - 2 (form filling and further signing allowed)
+                       - 3 (form filling, annotations and further signing allowed)
+  -dn=VALUE         - distinguished name, for personal on demand certificate signing
+                       supported attributes, separated by commas:
+                       [mandatory]
+                       - cn / commonname
+                       - c / countryname
+                       [optional]
+                       - emailaddress
+                       - givenname
+                       - l / localityname
+                       - ou / organizationalunitname
+                       - o / organizationname
+                       - serialnumber
+                       - st / stateorprovincename
+                       - sn / surname
+  -msisdn=VALUE     - mobileid step up phone number            (requires -dn -msg -lang)
+  -msg=VALUE        - mobileid step up message to be displayed (requires -dn -msisdn -lang)
+  -lang=VALUE       - mobileid step up language                (requires -dn -msisdn -msg)
+                       supported values:
+                       - en (english)
+                       - de (deutsch)
+                       - fr (français)
+                       - it (italiano)
 
-Examples:
-  java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf
-  java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=CH -contact=alice@example.com
-  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -certlevel=1 -dn='cn=Hans Muster,o=ACME,c=CH'
-  java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Hans Muster,o=ACME,c=CH' -msisdn=41792080350 -msg='service.com: Sign?' -lang=en
+EXAMPLES
 
+  [timestamp]
+    java com.swisscom.ais.itext.SignPDF -type=timestamp -infile=sample.pdf -outfile=signed.pdf
+    java com.swisscom.ais.itext.SignPDF -v -type=timestamp -infile=sample.pdf -outfile=signed.pdf
+
+  [sign with static certificate]
+    java com.swisscom.ais.itext.SignPDF -type=sign -infile=sample.pdf -outfile=signed.pdf
+    java com.swisscom.ais.itext.SignPDF -v -config=/tmp/signpdf.properties -type=sign -infile=sample.pdf -outfile=signed.pdf -reason=Approved -location=Berne -contact=alice@acme.com
+
+  [sign with on demand certificate]
+    java com.swisscom.ais.itext.SignPDF -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH'
+    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -certlevel=1
+
+  [sign with OnDemand certificate and Mobile ID step up]
+    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF?' -lang=en
 ```
 
 #### Dependencies
