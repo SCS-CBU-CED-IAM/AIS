@@ -1,0 +1,107 @@
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:ais="http://service.ais.swisscom.com/"
+	name="AisService" 
+	targetNamespace="http://service.ais.swisscom.com/">
+
+	<wsdl:types>
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			targetNamespace="http://www.w3.org/XML/1998/namespace" version="1.0" />
+
+		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+			xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
+			xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+			elementFormDefault="unqualified" 
+			targetNamespace="http://service.ais.swisscom.com/"
+			version="1.0">
+
+			<xs:import namespace="urn:oasis:names:tc:dss:1.0:core:schema"
+				schemaLocation="oasis-dss-core-minimal.xsd" />
+			<xs:import
+				namespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+				schemaLocation="oasis-dss-async-minimal.xsd" />
+			<xs:import namespace="http://ais.swisscom.ch/1.0/schema"
+				schemaLocation="swisscom-minimal.xsd" />
+
+			<xs:element name="pending" type="ais:pending" />
+			<xs:element name="pendingResponse" type="ais:pendingResponse" />
+			<xs:element name="sign" type="ais:sign" />
+			<xs:element name="signResponse" type="ais:signResponse" />
+			
+			<xs:complexType name="pending" >
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="async:PendingRequest" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="pendingResponse">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:Response" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="sign">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:SignRequest" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:complexType name="signResponse">
+				<xs:sequence>
+					<xs:element minOccurs="0" ref="dss:SignResponse" />
+				</xs:sequence>
+			</xs:complexType>
+		</xs:schema>
+	</wsdl:types>
+	
+	<wsdl:message name="sign">
+		<wsdl:part element="ais:sign" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="signResponse">
+		<wsdl:part element="ais:signResponse" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="pendingResponse">
+		<wsdl:part element="ais:pendingResponse" name="parameters"></wsdl:part>
+	</wsdl:message>
+	<wsdl:message name="pending">
+		<wsdl:part element="ais:pending" name="parameters"></wsdl:part>
+	</wsdl:message>
+	
+	<wsdl:portType name="AisServiceInterface">
+		<wsdl:operation name="pending">
+			<wsdl:input message="ais:pending" name="pending"></wsdl:input>
+			<wsdl:output message="ais:pendingResponse" name="pendingResponse"></wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="sign">
+			<wsdl:input message="ais:sign" name="sign"></wsdl:input>
+			<wsdl:output message="ais:signResponse" name="signResponse"></wsdl:output>
+		</wsdl:operation>
+	</wsdl:portType>
+
+	<wsdl:binding name="AisServiceSoapBinding" type="ais:AisServiceInterface">
+		<soap:binding style="document"
+			transport="http://schemas.xmlsoap.org/soap/http" />
+		<wsdl:operation name="pending">
+			<soap:operation soapAction="" style="document" />
+			<wsdl:input name="pending">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="pendingResponse">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+		<wsdl:operation name="sign">
+			<soap:operation soapAction="" style="document" />
+			<wsdl:input name="sign">
+				<soap:body use="literal" />
+			</wsdl:input>
+			<wsdl:output name="signResponse">
+				<soap:body use="literal" />
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+
+	<wsdl:service name="AisService">
+		<wsdl:port binding="ais:AisServiceSoapBinding" name="AisServicePort">
+			<soap:address location="https://ais.swisscom.com/AIS-Server/ws" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
