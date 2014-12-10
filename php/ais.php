@@ -42,7 +42,7 @@ class AllinSigningService {
      * #params     array     Additional SOAP client options
      * @return     null
      */
-	public function __construct($customerID, $cert, $cafile, $myOpts = null) {
+    public function __construct($customerID, $cert, $cafile, $myOpts = null) {
         /* Set the Customer Infos */
         $this->customerID = $customerID;
 
@@ -102,11 +102,11 @@ class AllinSigningService {
             if (isset($this->response->SignResponse->Result->ResultMessage->_))
                 $this->resultmessage = (string)$this->response->SignResponse->Result->ResultMessage->_;
 
-			if ($this->resultmajor === 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
-				return(true);
-			} else {
-				return(false);
-			}
+            if ($this->resultmajor === 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
+                return(true);
+            } else {
+                return(false);
+            }
         } catch (Exception $e) {
             return(false);
         }
@@ -282,7 +282,7 @@ class AllinSigningService {
         $trans_id = 'AIS.PHP.'.rand(89999, 10000).'.'.rand(8999, 1000);
         
         return($trans_id);
-	}
+    }
 
     /**
      * addRevocationInformation - Defines the type of revocation information to be added
@@ -310,9 +310,9 @@ class AllinSigningService {
      * #params     boolean
      */
     public function addTimestamp($timestamp) {
-	    $timestamp = (boolean)$timestamp;
-	    if ($timestamp) $this->addTimestamp = true;
-	               else $this->addTimestamp = false;
+        $timestamp = (boolean)$timestamp;
+        if ($timestamp) $this->addTimestamp = true;
+                   else $this->addTimestamp = false;
     }
 
     /**
@@ -336,7 +336,7 @@ class AllinSigningService {
      * @return     string
      */
     public function getLastResponse() {
-	    return($this->prettyXML($this->client->__getLastResponse()));
+        return($this->prettyXML($this->client->__getLastResponse()));
     }
 
     /**
