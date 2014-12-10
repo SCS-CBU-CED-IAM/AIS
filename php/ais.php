@@ -4,7 +4,7 @@
  * @package        AllinSigningService
  * @copyright      Copyright (C) 2014. All rights reserved.
  * @license        GNU General Public License version 2 or later; see LICENSE.md
- * @author         Swisscom (Schweiz AG)
+ * @author         Swisscom (Schweiz) AG
  * Requirements    PHP 5.3.x, php_soap, php_libxml, OpenSSL
  *
  * Open Issues     Switch from exec openssl to proper OpenSSL PHP function to find signer certificate
