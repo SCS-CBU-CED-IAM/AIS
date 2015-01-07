@@ -25,3 +25,7 @@ AIS-Client-Prod-IAM_2014-2017.*
 # IDE #
 ###################
 .idea/*
+
+shell/mycert.key
+shell/mycert.crt
+shell/myfile.txt
