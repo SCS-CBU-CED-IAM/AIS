@@ -58,14 +58,15 @@ if [ $# -lt 3 ]; then                           # Parse the rest of the argument
   echo "  pkcs7      - output file with detached PKCS#7 (Cryptographic Message Syntax) signature"
   echo "  [dn]       - optional distinguished name for on-demand certificate signing"
   echo "  [[msisdn]] - optional Mobile ID authentication when [dn] is present"
-  echo "  [[msg]]    - optional Mobile ID message when [dn] is present"
+  echo "  [[msg]]    - optional Mobile ID message when [dn] is present."
+  echo "               A placeholder #TRANSID# may be used anywhere in the message to include a unique transaction id."
   echo "  [[lang]]   - optional Mobile ID language (en, de, fr, it) when [dn] is present"
   echo
   echo "  Example $0 -v myfile.txt SHA256 myfile.p7s"
   echo "          $0 -v myfile.txt SHA256 myfile.p7s 'cn=Hans Muster,o=ACME,c=CH'"
   echo "          $0 -v -t JSON myfile.txt SHA256 result.p7s 'cn=Hans Muster,o=ACME,c=CH'"
-  echo "          $0 -v myfile.txt SHA256 myfile.p7s 'cn=Hans Muster,o=ACME,c=CH' +41792080350"
-  echo "          $0 -v myfile.txt SHA256 myfile.p7s 'cn=Hans Muster,o=ACME,c=CH' +41792080350 'myserver.com: Sign?' en"
+  echo "          $0 -v myfile.txt SHA256 myfile.p7s 'cn=Hans Muster,c=CH' +41792080350"
+  echo "          $0 -v myfile.txt SHA256 myfile.p7s 'cn=Hans Muster,c=CH' +41792080350 'test.com: Sign it? (#TRANSID#)' en"
   echo 
   exit 1
 fi
@@ -73,7 +74,7 @@ fi
 PWD=$(dirname $0)                               # Get the Path of the script
 
 # Check the dependencies
-for cmd in curl openssl sed date xmllint tr python; do
+for cmd in curl openssl sed date xmllint tr python head; do
   hash $cmd &> /dev/null
   if [ $? -eq 1 ]; then error "Dependency error: '$cmd' not found" ; fi
 done
@@ -120,11 +121,19 @@ ONDEMAND_DN=$4
 # Optional step up authentication with Mobile ID
 MID=""                                          # MobileID step up by default off
 MID_MSISDN=$5                                   # MSISDN
-MID_MSG=$6                                      # Optional DTBS
-[ ! -n "$MID_MSG" ] && MID_MSG="Sign it?"
-MID_LANG=$7                                     # Optional Language
-[ ! -n "$MID_LANG" ] && MID_LANG="EN"
-if [ -n "$MID_MSISDN" ]; then                   # MobileID step up?
+
+if [ -n "$MID_MSISDN" ]; then                   # MobileID step up
+  # Generate a unique transaction id
+  TRANSID=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 6)
+  
+  # Optional Mobile ID message (with unique transaction id, if requested)
+  MID_MSG=$(echo $6 | sed -e "s/#TRANSID#/${TRANSID}/g")
+  [ ! -n "$MID_MSG" ] && MID_MSG="Sign it? (${TRANSID})"
+
+  # Optional Mobile ID language (en, de, fr, it)
+  MID_LANG=$7
+  [ ! -n "$MID_LANG" ] && MID_LANG="EN"
+
   case "$MSGTYPE" in
     SOAP|XML) 
       MID='
