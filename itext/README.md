@@ -33,7 +33,7 @@ OPTIONS
   -dn=VALUE         - distinguished name, for personal on demand certificate signing
                        supported attributes, separated by commas:
                        [mandatory]
-                       - cn / commonname
+                       - cn / commonname 
                        - c / countryname
                        [optional]
                        - emailaddress
@@ -46,6 +46,7 @@ OPTIONS
                        - sn / surname
   -msisdn=VALUE     - mobileid step up phone number            (requires -dn -msg -lang)
   -msg=VALUE        - mobileid step up message to be displayed (requires -dn -msisdn -lang)
+                      A placeholder #TRANSID# may be used anywhere in the message to include a unique transaction id.
   -lang=VALUE       - mobileid step up language                (requires -dn -msisdn -msg)
                        supported values:
                        - en (english)
@@ -68,7 +69,7 @@ EXAMPLES
     java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -certlevel=1
 
   [sign with OnDemand certificate and Mobile ID step up]
-    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF?' -lang=en
+    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF? (#TRANSID#)' -lang=en
 ```
 
 #### Dependencies

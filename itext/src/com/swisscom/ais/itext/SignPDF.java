@@ -29,6 +29,8 @@ package com.swisscom.ais.itext;
 import javax.annotation.*;
 
 import java.io.File;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
 public class SignPDF {
 
@@ -199,6 +201,7 @@ public class SignPDF {
         System.out.println("                       - sn / surname");
         System.out.println("  -msisdn=VALUE     - mobileid step up phone number            (requires -dn -msg -lang)");
         System.out.println("  -msg=VALUE        - mobileid step up message to be displayed (requires -dn -msisdn -lang)");
+        System.out.println("                      A placeholder #TRANSID# may be used anywhere in the message to include a unique transaction id.");
         System.out.println("  -lang=VALUE       - mobileid step up language                (requires -dn -msisdn -msg)");
         System.out.println("                       supported values:");
         System.out.println("                       - en (english)");
@@ -221,7 +224,7 @@ public class SignPDF {
         System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -certlevel=1");
         System.out.println();
         System.out.println("  [sign with OnDemand certificate and Mobile ID step up]");
-        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF?' -lang=en");
+        System.out.println("    java com.swisscom.ais.itext.SignPDF -v -type=sign -infile=sample.pdf -outfile=signed.pdf -dn='cn=Alice Smith,o=ACME,c=CH' -msisdn=41792080350 -msg='acme.com: Sign the PDF? (#TRANSID#)' -lang=en");
         System.exit(1);
     }
 
@@ -316,6 +319,8 @@ public class SignPDF {
                 msisdn = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-msg=")) {
                 msg = args[i].substring(args[i].indexOf("=") + 1).trim();
+                String transId = getNewTransactionId();
+                msg = msg.replaceAll("#TRANSID#", transId);
             } else if (param.contains("-lang=")) {
                 language = args[i].substring(args[i].indexOf("=") + 1).trim();
             } else if (param.contains("-config=")) {
@@ -387,5 +392,14 @@ public class SignPDF {
             }
         }
     }
+    
+    /**
+     * Return a unique transaction id
+     * @return transaction id
+     */
+    private String getNewTransactionId() {
+    	// secure, easy but a little bit more expensive way to get a random alphanumeric string
+        return new BigInteger(30, new SecureRandom()).toString(32);
+    }   
 
 }
