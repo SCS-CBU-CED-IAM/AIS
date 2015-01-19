@@ -175,7 +175,36 @@ public class Soap {
      */
     public void sign(@Nonnull Include.Signature signatureType, @Nonnull String fileIn, @Nonnull String fileOut,
                      @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
-                     @Nullable int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn, 
+                     int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn,
+                     @Nullable String msg, @Nullable String language)
+            throws Exception {
+
+        InputStream inputStream = new FileInputStream( fileIn );
+
+        sign(signatureType, inputStream, null, fileOut, signingReason, signingLocation, signingContact, certificationLevel,
+                distinguishedName, msisdn, msg, language);
+
+    }
+
+    /**
+     * Read signing options from properties. Depending on parameters here will be decided which type of signature will be used.
+     *
+     * @param signatureType     Type of signature e.g. timestamp, ondemand or static
+     * @param inputStream       File path of input pdf document
+     * @param pdfLabel          Label for a pdf stream
+     * @param fileOut           File path of output pdf document which will be the signed one
+     * @param signingReason     Reason for signing a document
+     * @param signingLocation   Location where a document was signed
+     * @param signingContact    Person who signed document
+     * @param distinguishedName Information about signer e.g. name, country etc.
+     * @param msisdn            Mobile id for sending message to signer
+     * @param msg               Message which will be send to signer if msisdn is set
+     * @param language          Language of message
+     * @throws Exception If parameters are not set or signing failed
+     */
+    public void sign(@Nonnull Include.Signature signatureType, @Nonnull InputStream inputStream, @Nullable String pdfLabel,
+                     @Nonnull String fileOut, @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
+                     int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn,
                      @Nullable String msg, @Nullable String language)
             throws Exception {
 
@@ -188,7 +217,7 @@ public class Soap {
             claimedIdentity = claimedIdentity.concat(":" + properties.getProperty(claimedIdentityPropName));
         }
 
-        PDF pdf = new PDF(fileIn, fileOut, null, signingReason, signingLocation, signingContact, certificationLevel);
+        PDF pdf = new PDF(inputStream, pdfLabel, fileOut, null, signingReason, signingLocation, signingContact, certificationLevel);
 
         try {
             String requestId = getRequestId();
@@ -200,7 +229,7 @@ public class Soap {
                 Calendar signingTime = Calendar.getInstance();
                 // Add 3 Minutes to move signing time within the OnDemand Certificate Validity
                 // This is only relevant in case the signature does not include a timestamp
-                signingTime.add(Calendar.MINUTE, 3); 
+                signingTime.add(Calendar.MINUTE, 3);
                 signDocumentOnDemandCertMobileId(new PDF[]{pdf}, signingTime, hashAlgo, _url, claimedIdentity, distinguishedName, msisdn, msg, language, requestId);
             } else if (signatureType.equals(Include.Signature.ONDEMAND)) {
                 if (_debugMode) {
@@ -290,7 +319,7 @@ public class Soap {
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
     private void signDocumentOnDemandCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                          @Nonnull boolean mobileIDStepUp, @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
+                                          boolean mobileIDStepUp, @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         String[] additionalProfiles;
@@ -412,7 +441,12 @@ public class Soap {
             //Getting pdf input file names for message output
             String pdfNames = "";
             for (int i = 0; i < pdfs.length; i++) {
-                pdfNames = pdfNames.concat(new File(pdfs[i].getInputFilePath()).getName());
+                if ( pdfs[i].getInputFilePath() != null )
+                    pdfNames = pdfNames.concat(new File(pdfs[i].getInputFilePath()).getName());
+                else if ( pdfs[i].getPdfLabel() != null)
+                    pdfNames = pdfNames.concat(pdfs[i].getPdfLabel());
+                else
+                    pdfNames = pdfNames.concat("PDF number: " + i);
                 if (pdfs.length > i + 1)
                     pdfNames = pdfNames.concat(", ");
             }

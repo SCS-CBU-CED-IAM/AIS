@@ -27,6 +27,7 @@ import com.itextpdf.text.pdf.codec.Base64;
 import com.itextpdf.text.pdf.security.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -43,6 +44,11 @@ import java.util.HashMap;
 
 public class PDF {
 
+	/**
+	 * Stream of file which have to be signed
+	 */
+	private InputStream inputStream;
+
     /**
      * Save file path from input file
      */
@@ -52,6 +58,11 @@ public class PDF {
      * Save file path from output file
      */
     private String outputFilePath;
+
+	/**
+	 * If you use an Inputstream there is no filename to print in a success or failure message so you can give a label
+	 */
+	private String pdfLabel;
 
     /**
      * Save password from pdf
@@ -106,12 +117,13 @@ public class PDF {
     /**
      * Set parameters
      *
-     * @param inputFilePath  Path from input file
-     * @param outputFilePath Path from output file
-     * @param pdfPassword    Password form pdf
-     * @param signReason     Reason from signing
-     * @param signLocation   Location for frOn signing
-     * @param signContact    Contact for signing
+     * @param inputFilePath  		Path from input file
+     * @param outputFilePath 		Path from output file
+     * @param pdfPassword    		Password form pdf
+     * @param signReason     		Reason from signing
+     * @param signLocation   		Location for frOn signing
+     * @param signContact    		Contact for signing
+	 * @param certificationLevel    Certification level - which changes are allowed after signing
      */
     PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
         this.inputFilePath = inputFilePath;
@@ -123,14 +135,46 @@ public class PDF {
         this.certificationLevel = certificationLevel;
     }
 
+	/**
+	 * Set parameters
+	 *
+	 * @param inputFileStream 		InputStream from input file
+	 * @param pdfLabel 				If you use an Inputstream there is no filename to print in a success or failure message so you can give a label
+	 * @param outputFilePath 		Path from output file
+	 * @param pdfPassword    		Password form pdf
+	 * @param signReason     		Reason from signing
+	 * @param signLocation   		Location for frOn signing
+	 * @param signContact    		Contact for signing
+	 * @param certificationLevel	Certification level - which changes are allowed after signing
+	 */
+	PDF(@Nonnull InputStream inputFileStream, @Nullable String pdfLabel, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
+		this.inputStream = inputFileStream;
+		this.pdfLabel = pdfLabel;
+		this.outputFilePath = outputFilePath;
+		this.pdfPassword = pdfPassword;
+		this.signReason = signReason;
+		this.signLocation = signLocation;
+		this.signContact = signContact;
+		this.certificationLevel = certificationLevel;
+	}
+
     /**
-     * Get file path of pdf to sign
+     * Get label of PDF file
      *
-     * @return Path from pdf to sign
+     * @return Label of PDF file
      */
-    public String getInputFilePath() {
-        return inputFilePath;
+    public String getPdfLabel() {
+        return pdfLabel;
     }
+
+	/**
+	 * Get file path of pdf to sign
+	 *
+	 * @return Path from pdf to sign
+	 */
+	public String getInputFilePath() {
+		return inputFilePath;
+	}
 
     /**
      * Add signature information (reason for signing, location, contact, date) and create hash from pdf document
@@ -145,7 +189,11 @@ public class PDF {
     public byte[] getPdfHash(@Nonnull Calendar signDate, int estimatedSize, @Nonnull String hashAlgorithm, boolean isTimestampOnly)
             throws Exception {
 
-        pdfReader = new PdfReader(inputFilePath, pdfPassword != null ? pdfPassword.getBytes() : null);
+		if ( inputFilePath != null )
+        	pdfReader = new PdfReader(inputFilePath, pdfPassword != null ? pdfPassword.getBytes() : null);
+		else
+			pdfReader = new PdfReader( inputStream, pdfPassword != null ? pdfPassword.getBytes() : null);
+
         AcroFields acroFields = pdfReader.getAcroFields();
         boolean hasSignature = acroFields.getSignatureNames().size() > 0;
         byteArrayOutputStream = new ByteArrayOutputStream();
