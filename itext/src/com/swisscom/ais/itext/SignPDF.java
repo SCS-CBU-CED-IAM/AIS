@@ -141,7 +141,7 @@ public class SignPDF {
 
             //start signing
             Soap dss_soap = new Soap(verboseMode, debugMode, propertyFilePath);
-            dss_soap.sign(signature, pdfToSign, signedPDF, signingReason, signingLocation, signingContact, certificationLevel, distinguishedName, msisdn, msg, language);
+            dss_soap.sign(signature, new String[]{pdfToSign}, new String[]{signedPDF}, signingReason, signingLocation, signingContact, certificationLevel, distinguishedName, msisdn, msg, language);
         } catch (Exception e) {
             if (debugMode || verboseMode) {
                 printError(e.getMessage().replaceAll("java.lang.Exception", "").length() > 0 ? e.getMessage() : "");
