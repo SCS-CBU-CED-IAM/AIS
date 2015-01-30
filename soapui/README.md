@@ -40,6 +40,9 @@ ${#TestSuite#STATIC_ID}|Your ClaimedIdentity Key ID for Static Keys
 ${#TestSuite#ONDEMAND_QUALIFIED}|Your ClaimedIdentity Key ID for OnDemand Keys and enforced MID Auth
 ${#TestSuite#ONDEMAND_ADVANCED}|Your ClaimedIdentity Key ID for OnDemand Keys and optional MID Auth
 ${#TestSuite#MSISDN}|The Mobile Subscriber Number
+${#TestSuite#OnDemand_CN}|CommonName for OnDemand Requests
+${#TestSuite#OnDemand_O}|OrganizationName for OnDemand Requests
+${#TestSuite#OnDemand_C}|CountryName for OnDemand Requests
 ${#TestSuite#USER_ALERT}|Turn on ('true') or off ('false') user alert messages before any Mobile ID authentication
 ${#TestSuite#SHA256}|URI For SHA-256 Algorithm
 ${#TestSuite#SHA384}|URI For SHA-384 Algorithm
@@ -47,7 +50,8 @@ ${#TestSuite#SHA512}|URI For SHA-512 Algorithm
 ${#TestSuite#DIGEST_256}|Base64 encoded binary hash (SHA-256) value of any document
 ${#TestSuite#DIGEST_384}|Base64 encoded binary hash (SHA-384) value of any document
 ${#TestSuite#DIGEST_512}|Base64 encoded binary hash (SHA-512) value of any document
-${#TestSuite#_tmp}|This property is used for temporary session data only
+${#TestSuite#_tmp}|This property is used for temporary session data only, ignore it
+${#TestSuite#_tmp_MIDSerialNumber}|This property is used for temporary session data only, ignore it
 
 #### Benchmark
 
@@ -80,6 +84,9 @@ ${#TestSuite#BASEURL}|Base URL for the Endpoint. Use https://ais.swisscom.com
 ${#TestSuite#AP_ID}|Your ClaimedIdentity Customer ID (AP_ID)
 ${#TestSuite#STATIC_ID}|Your ClaimedIdentity Key ID for Static Keys
 ${#TestSuite#ONDEMAND_ADVANCED}|Your ClaimedIdentity Key ID for OnDemand Keys and optional MID Auth
+${#TestSuite#OnDemand_CN}|CommonName for OnDemand Requests
+${#TestSuite#OnDemand_O}|OrganizationName for OnDemand Requests
+${#TestSuite#OnDemand_C}|CountryName for OnDemand Requests
 ${#TestSuite#SHA256}|URI For SHA-256 Algorithm
 ${#TestSuite#DIGEST_256}|Base64 encoded binary hash (SHA-256) value of any document
 ${#TestSuite#Delay}|Delay in ms before each load test case
