@@ -29,3 +29,5 @@ AIS-Client-Prod-IAM_2014-2017.*
 shell/mycert.key
 shell/mycert.crt
 shell/myfile.txt
+
+*.iml

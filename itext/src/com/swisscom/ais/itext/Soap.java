@@ -158,6 +158,7 @@ public class Soap {
 
     }
 
+
     /**
      * Read signing options from properties. Depending on parameters here will be decided which type of signature will be used.
      *
@@ -171,12 +172,47 @@ public class Soap {
      * @param msisdn            Mobile id for sending message to signer
      * @param msg               Message which will be send to signer if msisdn is set
      * @param language          Language of message
+     * @return                  If no output file path is given signed file will be returned as a stream
      * @throws Exception If parameters are not set or signing failed
      */
-    public void sign(@Nonnull Include.Signature signatureType, @Nonnull String fileIn, @Nonnull String fileOut,
-                     @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
-                     @Nullable int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn, 
-                     @Nullable String msg, @Nullable String language)
+    public ByteArrayOutputStream[] sign(@Nonnull Include.Signature signatureType, @Nonnull String[] fileIn, @Nullable String[] fileOut,
+                                        @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
+                                        int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn,
+                                        @Nullable String msg, @Nullable String language)
+            throws Exception {
+
+        InputStream[] inputStream = new FileInputStream[fileIn.length];
+
+        for ( int i=0; i<fileIn.length; i++ ){
+            inputStream[i] = new FileInputStream( fileIn[i] );
+        }
+
+        return sign(signatureType, inputStream, null, fileOut, signingReason, signingLocation, signingContact, certificationLevel,
+                distinguishedName, msisdn, msg, language);
+
+    }
+
+    /**
+     * Read signing options from properties. Depending on parameters here will be decided which type of signature will be used.
+     *
+     * @param signatureType     Type of signature e.g. timestamp, ondemand or static
+     * @param inputStream       File path of input pdf document
+     * @param pdfLabel          Label for a pdf stream
+     * @param fileOut           File path of output pdf document which will be the signed one
+     * @param signingReason     Reason for signing a document
+     * @param signingLocation   Location where a document was signed
+     * @param signingContact    Person who signed document
+     * @param distinguishedName Information about signer e.g. name, country etc.
+     * @param msisdn            Mobile id for sending message to signer
+     * @param msg               Message which will be send to signer if msisdn is set
+     * @param language          Language of message
+     * @return                  If no output file path is given signed file will be returned as a stream
+     * @throws Exception If parameters are not set or signing failed
+     */
+    public ByteArrayOutputStream[] sign(@Nonnull Include.Signature signatureType, @Nonnull InputStream[] inputStream, @Nullable String pdfLabel,
+                                        @Nullable String[] fileOut, @Nullable String signingReason, @Nullable String signingLocation, @Nullable String signingContact,
+                                        int certificationLevel, @Nullable String distinguishedName, @Nullable String msisdn,
+                                        @Nullable String msg, @Nullable String language)
             throws Exception {
 
         Include.HashAlgorithm hashAlgo = Include.HashAlgorithm.valueOf(properties.getProperty("DIGEST_METHOD").trim().toUpperCase());
@@ -188,7 +224,10 @@ public class Soap {
             claimedIdentity = claimedIdentity.concat(":" + properties.getProperty(claimedIdentityPropName));
         }
 
-        PDF pdf = new PDF(fileIn, fileOut, null, signingReason, signingLocation, signingContact, certificationLevel);
+        PDF[] pdf = new PDF[inputStream.length];
+        for ( int i=0; i<inputStream.length; i++ ) {
+            pdf[ i ] = new PDF( inputStream[i], pdfLabel, fileOut != null ? fileOut[i] : null, null, signingReason, signingLocation, signingContact, certificationLevel );
+        }
 
         try {
             String requestId = getRequestId();
@@ -200,8 +239,8 @@ public class Soap {
                 Calendar signingTime = Calendar.getInstance();
                 // Add 3 Minutes to move signing time within the OnDemand Certificate Validity
                 // This is only relevant in case the signature does not include a timestamp
-                signingTime.add(Calendar.MINUTE, 3); 
-                signDocumentOnDemandCertMobileId(new PDF[]{pdf}, signingTime, hashAlgo, _url, claimedIdentity, distinguishedName, msisdn, msg, language, requestId);
+                signingTime.add(Calendar.MINUTE, 3);
+                return signDocumentOnDemandCertMobileId(pdf, signingTime, hashAlgo, _url, claimedIdentity, distinguishedName, msisdn, msg, language, requestId);
             } else if (signatureType.equals(Include.Signature.ONDEMAND)) {
                 if (_debugMode) {
                     System.out.println("Going to sign with ondemand");
@@ -210,19 +249,18 @@ public class Soap {
                 // Add 3 Minutes to move signing time within the OnDemand Certificate Validity
                 // This is only relevant in case the signature does not include a timestamp
                 signingTime.add(Calendar.MINUTE, 3);
-                signDocumentOnDemandCert(new PDF[]{pdf}, hashAlgo, signingTime, _url, true,
-                        distinguishedName, claimedIdentity, requestId);
+                return signDocumentOnDemandCert(pdf, hashAlgo, signingTime, _url, distinguishedName, claimedIdentity, requestId);
             } else if (signatureType.equals(Include.Signature.TIMESTAMP)) {
                 if (_debugMode) {
                     System.out.println("Going to sign only with timestamp");
                 }
-                signDocumentTimestampOnly(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, claimedIdentity,
+                return signDocumentTimestampOnly(pdf, hashAlgo, Calendar.getInstance(), _url, claimedIdentity,
                         requestId);
             } else if (signatureType.equals(Include.Signature.STATIC)) {
                 if (_debugMode) {
                     System.out.println("Going to sign with static cert");
                 }
-                signDocumentStaticCert(new PDF[]{pdf}, hashAlgo, Calendar.getInstance(), _url, claimedIdentity, requestId);
+                return signDocumentStaticCert(pdf, hashAlgo, Calendar.getInstance(), _url, claimedIdentity, requestId);
             } else {
                 throw new Exception("Wrong or missing parameters. Can not find a signature type.");
             }
@@ -244,12 +282,13 @@ public class Soap {
      * @param certReqMsg        Message which the signer get on his phone
      * @param certReqMsgLang    Language of message
      * @param requestId         An id for the request
+     * @return If there are no output paths given for documents signed documents will be returned as streams. Otherwise null will be return
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
-    private void signDocumentOnDemandCertMobileId(@Nonnull PDF pdfs[], @Nonnull Calendar signDate, @Nonnull Include.HashAlgorithm hashAlgo,
-                                                  @Nonnull String serverURI, @Nonnull String claimedIdentity,
-                                                  @Nonnull String distinguishedName, @Nonnull String phoneNumber, @Nonnull String certReqMsg,
-                                                  @Nonnull String certReqMsgLang, String requestId) throws Exception {
+    private ByteArrayOutputStream[] signDocumentOnDemandCertMobileId(@Nonnull PDF pdfs[], @Nonnull Calendar signDate, @Nonnull Include.HashAlgorithm hashAlgo,
+                                                                     @Nonnull String serverURI, @Nonnull String claimedIdentity,
+                                                                     @Nonnull String distinguishedName, @Nonnull String phoneNumber, @Nonnull String certReqMsg,
+                                                                     @Nonnull String certReqMsgLang, String requestId) throws Exception {
         String[] additionalProfiles;
 
         if (pdfs.length > 1) {
@@ -272,7 +311,7 @@ public class Soap {
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, _MOBILE_ID_TYPE, phoneNumber,
                 certReqMsg, certReqMsgLang, null, requestId);
 
-        signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
+        return signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
 
     }
 
@@ -283,14 +322,15 @@ public class Soap {
      * @param hashAlgo           Hash algorithm to use for signature
      * @param signDate           Date when document(s) will be signed
      * @param serverURI          Server uri where to send the request
-     * @param mobileIDStepUp     certificate request profile
      * @param distinguishedName  Information about signer e.g. name, country etc.
      * @param claimedIdentity    Signers identity
      * @param requestId          An id for the request
+     * @return If there are no output paths given for documents signed documents will be returned as streams. Otherwise null will be return
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
-    private void signDocumentOnDemandCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                          @Nonnull boolean mobileIDStepUp, @Nonnull String distinguishedName, @Nonnull String claimedIdentity, String requestId)
+    private ByteArrayOutputStream[] signDocumentOnDemandCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo,
+                                                             Calendar signDate, @Nonnull String serverURI, @Nonnull String distinguishedName,
+                                                             @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         String[] additionalProfiles;
@@ -313,7 +353,7 @@ public class Soap {
                 pdfHash, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), distinguishedName, null, null, null, null, null, requestId);
 
-        signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
+        return signDocumentSync( sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature" );
     }
 
     /**
@@ -325,10 +365,11 @@ public class Soap {
      * @param serverURI         Server uri where to send the request
      * @param claimedIdentity   Signers identity
      * @param requestId         An id for the request
+     * @return If there are no output paths given for documents signed documents will be returned as streams. Otherwise null will be return
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
-    private void signDocumentStaticCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
-                                        @Nonnull String claimedIdentity, String requestId)
+    private ByteArrayOutputStream[] signDocumentStaticCert(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate, @Nonnull String serverURI,
+                                                           @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         String[] additionalProfiles = null;
@@ -348,7 +389,7 @@ public class Soap {
                 pdfHash, additionalProfiles,
                 claimedIdentity, Include.SignatureType.CMS.getSignatureType(), null, null, null, null, null, null, requestId);
 
-        signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
+        return signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "Base64Signature");
     }
 
     /**
@@ -360,10 +401,11 @@ public class Soap {
      * @param serverURI         Server uri where to send the request
      * @param claimedIdentity   Signers identity
      * @param requestId         An id for the request
+     * @return If there are no output paths given for documents signed documents will be returned as streams. Otherwise null will be return
      * @throws Exception If hash or request can not be generated or document can not be signed.
      */
-    private void signDocumentTimestampOnly(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate,
-                                           @Nonnull String serverURI, @Nonnull String claimedIdentity, String requestId)
+    private ByteArrayOutputStream[] signDocumentTimestampOnly(@Nonnull PDF[] pdfs, @Nonnull Include.HashAlgorithm hashAlgo, Calendar signDate,
+                                                              @Nonnull String serverURI, @Nonnull String claimedIdentity, String requestId)
             throws Exception {
 
         Include.SignatureType signatureType = Include.SignatureType.TIMESTAMP;
@@ -388,7 +430,7 @@ public class Soap {
                 pdfHash, additionalProfiles, claimedIdentity, signatureType.getSignatureType(),
                 null, null, null, null, null, null, requestId);
 
-        signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "RFC3161TimeStampToken");
+        return signDocumentSync(sigReqMsg, serverURI, pdfs, estimatedSize, "RFC3161TimeStampToken");
     }
 
     /**
@@ -399,10 +441,11 @@ public class Soap {
      * @param pdfs          Pdf input file
      * @param estimatedSize Estimated size of external signature
      * @param signNodeName  Name of node where to find the signature
+     * @return If there are no output paths given for documents signed documents will be returned as streams. Otherwise null will be return
      * @throws Exception If hash can not be generated or document can not be signed.
      */
-    private void signDocumentSync(@Nonnull SOAPMessage sigReqMsg, @Nonnull String serverURI, @Nonnull PDF[] pdfs,
-                                  int estimatedSize, String signNodeName) throws Exception {
+    private ByteArrayOutputStream[] signDocumentSync(@Nonnull SOAPMessage sigReqMsg, @Nonnull String serverURI, @Nonnull PDF[] pdfs,
+                                                     int estimatedSize, String signNodeName) throws Exception {
 
         String sigResponse = sendRequest(sigReqMsg, serverURI);
         ArrayList<String> responseResult = getTextFromXmlText(sigResponse, "ResultMajor");
@@ -412,7 +455,12 @@ public class Soap {
             //Getting pdf input file names for message output
             String pdfNames = "";
             for (int i = 0; i < pdfs.length; i++) {
-                pdfNames = pdfNames.concat(new File(pdfs[i].getInputFilePath()).getName());
+                if ( pdfs[i].getInputFilePath() != null )
+                    pdfNames = pdfNames.concat(new File(pdfs[i].getInputFilePath()).getName());
+                else if ( pdfs[i].getPdfLabel() != null)
+                    pdfNames = pdfNames.concat(pdfs[i].getPdfLabel());
+                else
+                    pdfNames = pdfNames.concat("PDF number: " + i);
                 if (pdfs.length > i + 1)
                     pdfNames = pdfNames.concat(", ");
             }
@@ -442,7 +490,7 @@ public class Soap {
 
                     if (responseResult != null) {
                         for (String s : responseResult) {
-                            if (s.length() > 0) {
+                            if ( ! s.isEmpty( ) ) {
                                 if (!singingSuccess) {
                                     System.out.println(" Result major: " + s);
                                 } else {
@@ -454,7 +502,7 @@ public class Soap {
 
                     if (resultMinor != null) {
                         for (String s : resultMinor) {
-                            if (s.length() > 0) {
+                            if ( ! s.isEmpty( ) ) {
                                 if (!singingSuccess) {
                                     System.out.println(" Result minor: " + s);
                                 } else {
@@ -466,7 +514,7 @@ public class Soap {
 
                     if (errorMsg != null) {
                         for (String s : errorMsg) {
-                            if (s.length() > 0) {
+                            if ( ! s.isEmpty( ) ) {
                                 if (!singingSuccess) {
                                     System.out.println(" Result message: " + s);
                                 } else {
@@ -488,13 +536,13 @@ public class Soap {
         if (!singingSuccess) {
             throw new Exception();
         }
-        
+
         // Retrieve the Revocation Information (OCSP/CRL validation information)
         ArrayList<String> crl = getTextFromXmlText(sigResponse, "sc:CRL");
         ArrayList<String> ocsp = getTextFromXmlText(sigResponse, "sc:OCSP");
 
         ArrayList<String> signHashes = getTextFromXmlText(sigResponse, signNodeName);
-        signDocuments(signHashes, ocsp, crl, pdfs, estimatedSize, signNodeName.equals("RFC3161TimeStampToken"));
+        return signDocuments(signHashes, ocsp, crl, pdfs, estimatedSize, signNodeName.equals("RFC3161TimeStampToken"));
     }
 
     /**
@@ -505,19 +553,36 @@ public class Soap {
      * @param crl           Arraylist with Base64 encoded crl responses
      * @param pdfs          Pdf which will be signed
      * @param estimatedSize Estimated size of external signature
+     * @param timestampOnly Add only a timestamp
+     * @return If there are no file out paths are given signed documents will be return as a stream. Otherwise null will be returned
      * @throws Exception If adding signature to pdf failed.
      */
-    private void signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl, @Nonnull PDF[] pdfs, int estimatedSize, boolean timestampOnly) throws Exception {
+    private ByteArrayOutputStream[] signDocuments(@Nonnull ArrayList<String> signHashes, ArrayList<String> ocsp, ArrayList<String> crl,
+                                                  @Nonnull PDF[] pdfs, int estimatedSize, boolean timestampOnly) throws Exception {
         int counter = 0;
+        ByteArrayOutputStream[] returnStreams = null;
+        ByteArrayOutputStream tmpStream;
+
         for (String signatureHash : signHashes) {
-        	
-			pdfs[counter].createSignedPdf(Base64.decode(signatureHash), estimatedSize);
-			
-			if (timestampOnly)
-				pdfs[counter].addValidationInformation(ocsp, crl);;
-				
+
+            pdfs[counter].createSignedPdf(Base64.decode(signatureHash), estimatedSize);
+
+            if (timestampOnly)
+                pdfs[counter].addValidationInformation(ocsp, crl);
+
+            tmpStream = pdfs[counter].close();
+
+            if ( tmpStream != null ){
+                if ( returnStreams == null ){
+                    returnStreams = new ByteArrayOutputStream[pdfs.length];
+                }
+                returnStreams[counter] = tmpStream;
+            }
+
             counter++;
         }
+
+        return returnStreams;
     }
 
     /**
@@ -698,7 +763,7 @@ public class Soap {
                 signatureTypeElement.addTextNode(signatureType);
             }
 
-            
+
             if (!signatureType.equals(_TIMESTAMP_URN)) {
                 SOAPElement addTimeStampelement = optionalInputsElement.addChildElement("AddTimestamp");
                 addTimeStampelement.addAttribute(new QName("Type"), _TIMESTAMP_URN);
@@ -710,9 +775,9 @@ public class Soap {
             // CADES = unsigned attribute according to CAdES
             // PADES-attributes are signed and cannot be post-added to an already signed RFC3161-TimeStampToken
             // So the RevocationInformation (RI) of a trusted timestamp will be delivered via OptionalOutputs
-         	// and they shall be added to the Adobe DSS in order to enable LTV for a Timestamp
-			SOAPElement addRevocationElement = optionalInputsElement.addChildElement("AddRevocationInformation", "sc");
-			addRevocationElement.addAttribute(new QName("Type"), "BOTH"); // CADES + PADES attributes
+            // and they shall be added to the Adobe DSS in order to enable LTV for a Timestamp
+            SOAPElement addRevocationElement = optionalInputsElement.addChildElement("AddRevocationInformation", "sc");
+            addRevocationElement.addAttribute(new QName("Type"), "BOTH"); // CADES + PADES attributes
 
             if (responseId != null) {
                 SOAPElement responseIdElement = optionalInputsElement.addChildElement("ResponseID");
@@ -761,9 +826,7 @@ public class Soap {
 
         out.write(msg);
         out.flush();
-        if (out != null) {
-            out.close();
-        }
+        out.close();
 
         String line = "";
         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -773,9 +836,7 @@ public class Soap {
             response = response.length() > 0 ? response + " " + line : response + line;
         }
 
-        if (in != null) {
-            in.close();
-        }
+        in.close();
 
         if (_debugMode) {
             System.out.println("\nSOAP response message:\n" + getPrettyFormatedXml(response, 2));
@@ -787,14 +848,14 @@ public class Soap {
     /**
      * Calculate size of signature
      *
-     * @param isTimestampOnly    
+     * @param isTimestampOnly
      * @return Calculated size of external signature as int
      */
     private int getEstimatedSize(boolean isTimestampOnly) {
-    	if (isTimestampOnly)
-    		return 10000;
-    	else 
-    		return 22000;
+        if (isTimestampOnly)
+            return 10000;
+        else
+            return 22000;
     }
 
     /**

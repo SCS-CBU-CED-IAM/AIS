@@ -27,6 +27,7 @@ import com.itextpdf.text.pdf.codec.Base64;
 import com.itextpdf.text.pdf.security.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -43,207 +44,255 @@ import java.util.HashMap;
 
 public class PDF {
 
-    /**
-     * Save file path from input file
-     */
-    private String inputFilePath;
+	/**
+	 * Stream of file which have to be signed
+	 */
+	private InputStream inputStream;
 
-    /**
-     * Save file path from output file
-     */
-    private String outputFilePath;
+	/**
+	 * Save file path from input file
+	 */
+	private String inputFilePath;
 
-    /**
-     * Save password from pdf
-     */
-    private String pdfPassword;
-    
-    /**
-     * Save signing reason
-     */
-    private int certificationLevel = 0;
+	/**
+	 * Save file path from output file
+	 */
+	private String outputFilePath;
 
-    /**
-     * Save signing reason
-     */
-    private String signReason;
+	/**
+	 * If you use an Inputstream there is no filename to print in a success or failure message so you can give a label
+	 */
+	private String pdfLabel;
 
-    /**
-     * Save signing location
-     */
-    private String signLocation;
+	/**
+	 * Save password from pdf
+	 */
+	private String pdfPassword;
 
-    /**
-     * Save signing contact
-     */
-    private String signContact;
-    
-    /**
-     * Save PdfReader
-     */
-    private PdfReader pdfReader = null;
+	/**
+	 * Save signing reason
+	 */
+	private int certificationLevel = 0;
 
-    /**
-     * Save signature appearance from pdf
-     */
-    private PdfSignatureAppearance pdfSignatureAppearance;
+	/**
+	 * Save signing reason
+	 */
+	private String signReason;
 
-    /**
-     * Save pdf signature
-     */
-    private PdfSignature pdfSignature;
-    
-    /**
-     * Save pdfStamper
-     */
-    private PdfStamper pdfStamper;
+	/**
+	 * Save signing location
+	 */
+	private String signLocation;
 
-    /**
-     * Save byte array outputstream for writing pdf file
-     */
-    private ByteArrayOutputStream byteArrayOutputStream;
+	/**
+	 * Save signing contact
+	 */
+	private String signContact;
 
-    /**
-     * Set parameters
-     *
-     * @param inputFilePath  Path from input file
-     * @param outputFilePath Path from output file
-     * @param pdfPassword    Password form pdf
-     * @param signReason     Reason from signing
-     * @param signLocation   Location for frOn signing
-     * @param signContact    Contact for signing
-     */
-    PDF(@Nonnull String inputFilePath, @Nonnull String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
-        this.inputFilePath = inputFilePath;
-        this.outputFilePath = outputFilePath;
-        this.pdfPassword = pdfPassword;
-        this.signReason = signReason;
-        this.signLocation = signLocation;
-        this.signContact = signContact;
-        this.certificationLevel = certificationLevel;
-    }
+	/**
+	 * Save PdfReader
+	 */
+	private PdfReader pdfReader = null;
 
-    /**
-     * Get file path of pdf to sign
-     *
-     * @return Path from pdf to sign
-     */
-    public String getInputFilePath() {
-        return inputFilePath;
-    }
+	/**
+	 * Save signature appearance from pdf
+	 */
+	private PdfSignatureAppearance pdfSignatureAppearance;
 
-    /**
-     * Add signature information (reason for signing, location, contact, date) and create hash from pdf document
-     *
-     * @param signDate        Date of signing
-     * @param estimatedSize   The estimated size for signatures
-     * @param hashAlgorithm   The hash algorithm which will be used to sign the pdf
-     * @param isTimestampOnly If it is a timestamp signature. This is necessary because the filter is an other one compared to a "standard" signature
-     * @return Hash of pdf as bytes
-     * @throws Exception 
-     */
-    public byte[] getPdfHash(@Nonnull Calendar signDate, int estimatedSize, @Nonnull String hashAlgorithm, boolean isTimestampOnly)
-            throws Exception {
+	/**
+	 * Save pdf signature
+	 */
+	private PdfSignature pdfSignature;
 
-        pdfReader = new PdfReader(inputFilePath, pdfPassword != null ? pdfPassword.getBytes() : null);
-        AcroFields acroFields = pdfReader.getAcroFields();
-        boolean hasSignature = acroFields.getSignatureNames().size() > 0;
-        byteArrayOutputStream = new ByteArrayOutputStream();
-        pdfStamper = PdfStamper.createSignature(pdfReader, byteArrayOutputStream, '\0', null, hasSignature);
-        pdfStamper.setXmpMetadata(pdfReader.getMetadata());
+	/**
+	 * Save pdfStamper
+	 */
+	private PdfStamper pdfStamper;
 
-        pdfSignatureAppearance = pdfStamper.getSignatureAppearance();
-        pdfSignature = new PdfSignature(PdfName.ADOBE_PPKLITE, isTimestampOnly ? PdfName.ETSI_RFC3161 : PdfName.ADBE_PKCS7_DETACHED);
-        pdfSignature.setReason(signReason);
-        pdfSignature.setLocation(signLocation);
-        pdfSignature.setContact(signContact);
-        pdfSignature.setDate(new PdfDate(signDate));
-        pdfSignatureAppearance.setCryptoDictionary(pdfSignature);
-        
+	/**
+	 * Save byte array outputstream for writing pdf file
+	 */
+	private ByteArrayOutputStream byteArrayOutputStream;
+
+	/**
+	 * Set parameters
+	 *
+	 * @param inputFilePath  		Path from input file
+	 * @param outputFilePath 		Path from output file
+	 * @param pdfPassword    		Password form pdf
+	 * @param signReason     		Reason from signing
+	 * @param signLocation   		Location for frOn signing
+	 * @param signContact    		Contact for signing
+	 * @param certificationLevel    Certification level - which changes are allowed after signing
+	 */
+	PDF(@Nonnull String inputFilePath, @Nullable String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
+		this.inputFilePath = inputFilePath;
+		this.outputFilePath = outputFilePath;
+		this.pdfPassword = pdfPassword;
+		this.signReason = signReason;
+		this.signLocation = signLocation;
+		this.signContact = signContact;
+		this.certificationLevel = certificationLevel;
+	}
+
+	/**
+	 * Set parameters
+	 *
+	 * @param inputFileStream 		InputStream from input file
+	 * @param pdfLabel 				If you use an Inputstream there is no filename to print in a success or failure message so you can give a label
+	 * @param outputFilePath 		Path from output file
+	 * @param pdfPassword    		Password form pdf
+	 * @param signReason     		Reason from signing
+	 * @param signLocation   		Location for frOn signing
+	 * @param signContact    		Contact for signing
+	 * @param certificationLevel	Certification level - which changes are allowed after signing
+	 */
+	PDF(@Nonnull InputStream inputFileStream, @Nullable String pdfLabel, @Nullable String outputFilePath, String pdfPassword, String signReason, String signLocation, String signContact, int certificationLevel) {
+		this.inputStream = inputFileStream;
+		this.pdfLabel = pdfLabel;
+		this.outputFilePath = outputFilePath;
+		this.pdfPassword = pdfPassword;
+		this.signReason = signReason;
+		this.signLocation = signLocation;
+		this.signContact = signContact;
+		this.certificationLevel = certificationLevel;
+	}
+
+	/**
+	 * Get label of PDF file
+	 *
+	 * @return Label of PDF file
+	 */
+	public String getPdfLabel() {
+		return pdfLabel;
+	}
+
+	/**
+	 * Get file path of pdf to sign
+	 *
+	 * @return Path from pdf to sign
+	 */
+	public String getInputFilePath() {
+		return inputFilePath;
+	}
+
+	/**
+	 * Add signature information (reason for signing, location, contact, date) and create hash from pdf document
+	 *
+	 * @param signDate        Date of signing
+	 * @param estimatedSize   The estimated size for signatures
+	 * @param hashAlgorithm   The hash algorithm which will be used to sign the pdf
+	 * @param isTimestampOnly If it is a timestamp signature. This is necessary because the filter is an other one compared to a "standard" signature
+	 * @return Hash of pdf as bytes
+	 * @throws Exception
+	 */
+	public byte[] getPdfHash(@Nonnull Calendar signDate, int estimatedSize, @Nonnull String hashAlgorithm, boolean isTimestampOnly)
+			throws Exception {
+
+		if ( inputFilePath != null )
+			pdfReader = new PdfReader(inputFilePath, pdfPassword != null ? pdfPassword.getBytes() : null);
+		else
+			pdfReader = new PdfReader( inputStream, pdfPassword != null ? pdfPassword.getBytes() : null);
+
+		AcroFields acroFields = pdfReader.getAcroFields();
+		boolean hasSignature = !acroFields.getSignatureNames( ).isEmpty( );
+		byteArrayOutputStream = new ByteArrayOutputStream();
+		pdfStamper = PdfStamper.createSignature(pdfReader, byteArrayOutputStream, '\0', null, hasSignature);
+		pdfStamper.setXmpMetadata(pdfReader.getMetadata());
+
+		pdfSignatureAppearance = pdfStamper.getSignatureAppearance();
+		pdfSignature = new PdfSignature(PdfName.ADOBE_PPKLITE, isTimestampOnly ? PdfName.ETSI_RFC3161 : PdfName.ADBE_PKCS7_DETACHED);
+		pdfSignature.setReason(signReason);
+		pdfSignature.setLocation(signLocation);
+		pdfSignature.setContact(signContact);
+		pdfSignature.setDate(new PdfDate(signDate));
+		pdfSignatureAppearance.setCryptoDictionary(pdfSignature);
+
 		// certify the pdf, if requested
 		if (certificationLevel > 0) {
 			// check: at most one certification per pdf is allowed
 			if (pdfReader.getCertificationLevel() != PdfSignatureAppearance.NOT_CERTIFIED)
 				throw new Exception("Could not apply -certlevel option. At most one certification per pdf is allowed, but source pdf contained already a certification.");
-			pdfSignatureAppearance.setCertificationLevel(certificationLevel);        		 		
-        }
-        	
-        HashMap<PdfName, Integer> exc = new HashMap<PdfName, Integer>();
-        exc.put(PdfName.CONTENTS, new Integer(estimatedSize * 2 + 2));
+			pdfSignatureAppearance.setCertificationLevel(certificationLevel);
+		}
 
-        pdfSignatureAppearance.preClose(exc);
+		HashMap<PdfName, Integer> exc = new HashMap<PdfName, Integer>();
+		exc.put(PdfName.CONTENTS, new Integer(estimatedSize * 2 + 2));
 
-        MessageDigest messageDigest = MessageDigest.getInstance(hashAlgorithm);
-        InputStream rangeStream = pdfSignatureAppearance.getRangeStream();
-        int i;
-        while ((i = rangeStream.read()) != -1) {
-            messageDigest.update((byte) i);
-        }
+		pdfSignatureAppearance.preClose(exc);
 
-        return messageDigest.digest();
-    }
+		MessageDigest messageDigest = MessageDigest.getInstance(hashAlgorithm);
+		InputStream rangeStream = pdfSignatureAppearance.getRangeStream();
+		int i;
+		while ((i = rangeStream.read()) != -1) {
+			messageDigest.update((byte) i);
+		}
 
-    /**
-     * Add a signature to pdf document
-     *
-     * @param externalSignature  The extern generated signature
-     * @param estimatedSize      Size of external signature
-     * @throws Exception 
-     */
-    public void createSignedPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws Exception {
-    	// Check if source pdf is not protected by a certification
-    	if (pdfReader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
-    		throw new Exception("Could not apply signature because source file contains a certification that does not allow any changes to the document");
-    	
-    	if (Soap._debugMode) {
-    		System.out.println("\nEstimated SignatureSize: " + estimatedSize);
-    		System.out.println("Actual    SignatureSize: " + externalSignature.length);
-        	System.out.println("Remaining Size         : " + (estimatedSize-externalSignature.length));
-    	}
-		
-        if (estimatedSize < externalSignature.length) {
-            throw new IOException("\nNot enough space for signature (" + (estimatedSize-externalSignature.length) + " bytes)");
-        }
+		return messageDigest.digest();
+	}
 
-        PdfLiteral pdfLiteral = (PdfLiteral) pdfSignature.get(PdfName.CONTENTS);
-        byte[] outc = new byte[(pdfLiteral.getPosLength() - 2) / 2];
+	/**
+	 * Add a signature to pdf document
+	 * Be aware - the file stream will not be closed
+	 *
+	 * @param externalSignature  The extern generated signature
+	 * @param estimatedSize      Size of external signature
+	 * @throws Exception
+	 */
+	public void createSignedPdf(@Nonnull byte[] externalSignature, int estimatedSize) throws Exception {
+		// Check if source pdf is not protected by a certification
+		if (pdfReader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
+			throw new Exception("Could not apply signature because source file contains a certification that does not allow any changes to the document");
 
-        Arrays.fill(outc, (byte) 0);
+		if (Soap._debugMode) {
+			System.out.println("\nEstimated SignatureSize: " + estimatedSize);
+			System.out.println("Actual    SignatureSize: " + externalSignature.length);
+			System.out.println("Remaining Size         : " + (estimatedSize-externalSignature.length));
+		}
 
-        System.arraycopy(externalSignature, 0, outc, 0, externalSignature.length);
-        PdfDictionary dic2 = new PdfDictionary();
-        dic2.put(PdfName.CONTENTS, new PdfString(outc).setHexWriting(true));
-        pdfSignatureAppearance.close(dic2);
-           
-        // Save to file
-        OutputStream outputStream = new FileOutputStream(outputFilePath);
-        byteArrayOutputStream.writeTo(outputStream);
-        
-        if (Soap._debugMode) {
-	    	System.out.println("\nOK writing signature to " + outputFilePath);
-	    }
-        
-        byteArrayOutputStream.close();
-        outputStream.close();
-    }
-	
-	/** 
+		if (estimatedSize < externalSignature.length) {
+			throw new IOException("\nNot enough space for signature (" + (estimatedSize-externalSignature.length) + " bytes)");
+		}
+
+		PdfLiteral pdfLiteral = (PdfLiteral) pdfSignature.get(PdfName.CONTENTS);
+		byte[] outc = new byte[(pdfLiteral.getPosLength() - 2) / 2];
+
+		Arrays.fill(outc, (byte) 0);
+
+		System.arraycopy(externalSignature, 0, outc, 0, externalSignature.length);
+		PdfDictionary dic2 = new PdfDictionary();
+		dic2.put(PdfName.CONTENTS, new PdfString(outc).setHexWriting(true));
+		pdfSignatureAppearance.close(dic2);
+
+		if (Soap._debugMode) {
+			System.out.println("\nOK writing signature to " + (outputFilePath != null ? outputFilePath : "stream"));
+		}
+
+	}
+
+	/**
 	 * Add external revocation information to DSS Dictionary, to enable Long Term Validation (LTV) in Adobe Reader
-	 * 
+	 * Do not forgett to close pdf reader and create the file. You can use method close()
+	 *
 	 * @param ocspArr List of OCSP Responses as base64 encoded String
 	 * @param crlArr  List of CRLs as base64 encoded String
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public void addValidationInformation(ArrayList<String> ocspArr, ArrayList<String> crlArr) throws Exception {
 		if (ocspArr == null && crlArr == null)
 			return;
-		
-		PdfReader reader = new PdfReader(outputFilePath);
-		
+
+		if ( pdfReader == null ){
+			if ( inputStream != null )
+				pdfReader = new PdfReader( inputStream );
+			else //use file path
+				pdfReader = new PdfReader( inputFilePath );
+		}
+
 		// Check if source pdf is not protected by a certification
-    	if (reader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
-    		throw new Exception("Could not apply revocation information (LTV) to the DSS Dictionary. Document contains a certification that does not allow any changes.");
-    	
+		if (pdfReader.getCertificationLevel() == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED)
+			throw new Exception("Could not apply revocation information (LTV) to the DSS Dictionary. Document contains a certification that does not allow any changes.");
+
 		Collection<byte[]> ocspColl = new ArrayList<byte[]>();
 		Collection<byte[]> crlColl = new ArrayList<byte[]>();
 
@@ -289,7 +338,7 @@ public class PDF {
 		}
 
 		byteArrayOutputStream = new ByteArrayOutputStream();
-		PdfStamper stamper = new PdfStamper(reader, byteArrayOutputStream, '\0', true);
+		PdfStamper stamper = new PdfStamper(pdfReader, byteArrayOutputStream, '\0', true);
 		LtvVerification validation = stamper.getLtvVerification();
 
 		// Add the CRL/OCSP validation information to the DSS Dictionary
@@ -300,26 +349,44 @@ public class PDF {
 					ocspColl, // OCSP
 					crlColl, // CRL
 					null // certs
-					);
+			);
 		}
 
 		validation.merge(); // Merges the validation with any validation already in the document or creates a new one.
 
 		stamper.close();
-		reader.close();
-
-		// Save to (same) file
-		OutputStream outputStream = new FileOutputStream (outputFilePath);
-		byteArrayOutputStream.writeTo(outputStream);
 
 		if (Soap._debugMode) {
 			if (addVerification)
-				System.out.println("\nOK merging LTV validation information to " + outputFilePath);
+				System.out.println("\nOK merging LTV validation information to " + (outputFilePath != null ? outputFilePath : "stream"));
 			else
-				System.out.println("\nFAILED merging LTV validation information to " + outputFilePath);
+				System.out.println("\nFAILED merging LTV validation information to " + (outputFilePath != null ? outputFilePath : "stream"));
 		}
 
-		byteArrayOutputStream.close();
-		outputStream.close();
+	}
+
+	/**
+	 * Return signed document
+	 * @return If no output file path is given the byte array output stream will be returned. Otherwise a file will be created and null returned
+	 * @throws Exception
+	 */
+	public ByteArrayOutputStream close() throws Exception{
+
+		if ( inputStream != null ){
+			inputStream.close();
+		}
+
+		pdfReader.close();
+
+		if ( outputFilePath != null ) {
+			OutputStream outputStream = new FileOutputStream( outputFilePath );
+			byteArrayOutputStream.writeTo( outputStream );
+
+			byteArrayOutputStream.close( );
+			outputStream.close( );
+			return null;
+		} else {
+			return byteArrayOutputStream;
+		}
 	}
 }
