@@ -1,107 +1,484 @@
-<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
-	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-	xmlns:ais="http://service.ais.swisscom.com/"
-	name="AisService" 
-	targetNamespace="http://service.ais.swisscom.com/">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Description="Swisscom All-in Signing Service Interface 'Compact' WSDL" Version="1.0" -->
+<!-- The 'compact' version is one file version matching exactly the AIS service features. -->
+<!-- It is itself not OASIS DSS Core complaint, but will produce valid OASIS DSS requests. -->
 
-	<wsdl:types>
-		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-			targetNamespace="http://www.w3.org/XML/1998/namespace" version="1.0" />
+<wsdl:definitions targetNamespace="http://service.ais.swisscom.com/"
+                  xmlns:ais="http://service.ais.swisscom.com/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  name="AisService">
 
-		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-			xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
-			xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
-			elementFormDefault="unqualified" 
-			targetNamespace="http://service.ais.swisscom.com/"
-			version="1.0">
+  <!-- ################ -->
+  <!-- Type Definitions -->
+  <!-- ################ -->
+  <wsdl:types>
+    
+    <!-- ############# -->
+    <!-- XML Namespace -->
+    <!-- ############# -->
+    <xs:schema targetNamespace="http://www.w3.org/XML/1998/namespace"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               version="1.0" >
 
-			<xs:import namespace="urn:oasis:names:tc:dss:1.0:core:schema"
-				schemaLocation="oasis-dss-core-minimal.xsd" />
-			<xs:import
-				namespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
-				schemaLocation="oasis-dss-async-minimal.xsd" />
-			<xs:import namespace="http://ais.swisscom.ch/1.0/schema"
-				schemaLocation="swisscom-minimal.xsd" />
+      <xs:attribute name="lang" type="xs:language" />
+    </xs:schema>
 
-			<xs:element name="pending" type="ais:pending" />
-			<xs:element name="pendingResponse" type="ais:pendingResponse" />
-			<xs:element name="sign" type="ais:sign" />
-			<xs:element name="signResponse" type="ais:signResponse" />
-			
-			<xs:complexType name="pending" >
-				<xs:sequence>
-					<xs:element minOccurs="0" ref="async:PendingRequest" />
-				</xs:sequence>
-			</xs:complexType>
-			<xs:complexType name="pendingResponse">
-				<xs:sequence>
-					<xs:element minOccurs="0" ref="dss:Response" />
-				</xs:sequence>
-			</xs:complexType>
-			<xs:complexType name="sign">
-				<xs:sequence>
-					<xs:element minOccurs="0" ref="dss:SignRequest" />
-				</xs:sequence>
-			</xs:complexType>
-			<xs:complexType name="signResponse">
-				<xs:sequence>
-					<xs:element minOccurs="0" ref="dss:SignResponse" />
-				</xs:sequence>
-			</xs:complexType>
-		</xs:schema>
-	</wsdl:types>
-	
-	<wsdl:message name="sign">
-		<wsdl:part element="ais:sign" name="parameters"></wsdl:part>
-	</wsdl:message>
-	<wsdl:message name="signResponse">
-		<wsdl:part element="ais:signResponse" name="parameters"></wsdl:part>
-	</wsdl:message>
-	<wsdl:message name="pendingResponse">
-		<wsdl:part element="ais:pendingResponse" name="parameters"></wsdl:part>
-	</wsdl:message>
-	<wsdl:message name="pending">
-		<wsdl:part element="ais:pending" name="parameters"></wsdl:part>
-	</wsdl:message>
-	
-	<wsdl:portType name="AisServiceInterface">
-		<wsdl:operation name="pending">
-			<wsdl:input message="ais:pending" name="pending"></wsdl:input>
-			<wsdl:output message="ais:pendingResponse" name="pendingResponse"></wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="sign">
-			<wsdl:input message="ais:sign" name="sign"></wsdl:input>
-			<wsdl:output message="ais:signResponse" name="signResponse"></wsdl:output>
-		</wsdl:operation>
-	</wsdl:portType>
+    <!-- ######## -->
+    <!-- XML DSig -->
+    <!-- ######## -->
+    <xs:schema targetNamespace="http://www.w3.org/2000/09/xmldsig#"
+               xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               elementFormDefault="qualified">
 
-	<wsdl:binding name="AisServiceSoapBinding" type="ais:AisServiceInterface">
-		<soap:binding style="document"
-			transport="http://schemas.xmlsoap.org/soap/http" />
-		<wsdl:operation name="pending">
-			<soap:operation soapAction="" style="document" />
-			<wsdl:input name="pending">
-				<soap:body use="literal" />
-			</wsdl:input>
-			<wsdl:output name="pendingResponse">
-				<soap:body use="literal" />
-			</wsdl:output>
-		</wsdl:operation>
-		<wsdl:operation name="sign">
-			<soap:operation soapAction="" style="document" />
-			<wsdl:input name="sign">
-				<soap:body use="literal" />
-			</wsdl:input>
-			<wsdl:output name="signResponse">
-				<soap:body use="literal" />
-			</wsdl:output>
-		</wsdl:operation>
-	</wsdl:binding>
+      <xs:element name="DigestMethod" type="ds:DigestMethodType" />
+      <xs:complexType name="DigestMethodType" mixed="true">
+        <xs:sequence>
+          <xs:any namespace="##other" processContents="lax" minOccurs="0"
+                  maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="Algorithm" type="xs:anyURI" use="required" />
+      </xs:complexType>
 
-	<wsdl:service name="AisService">
-		<wsdl:port binding="ais:AisServiceSoapBinding" name="AisServicePort">
-			<soap:address location="https://ais.swisscom.com/AIS-Server/ws" />
-		</wsdl:port>
-	</wsdl:service>
+      <xs:element name="DigestValue" type="ds:DigestValueType" />
+      <xs:simpleType name="DigestValueType">
+        <xs:restriction base="xs:base64Binary" />
+      </xs:simpleType>
+    </xs:schema>
+
+    <!-- ####################### -->
+    <!-- OASIS DSS Profile Async -->
+    <!-- ####################### -->    
+    <xs:schema targetNamespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" 
+               xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" 
+               xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema" 
+               xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+               elementFormDefault="qualified" 
+               attributeFormDefault="unqualified">
+
+      <xs:import namespace="urn:oasis:names:tc:dss:1.0:core:schema" />
+      
+      <!-- Additional requests required for asynch protocol -->
+      <xs:element name="PendingRequest">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="dss:RequestBaseType"/>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:simpleType name="ResponseIDType">
+        <xs:restriction base="xs:string"/>
+      </xs:simpleType>
+      <xs:element name="ResponseID" type="async:ResponseIDType" />
+    </xs:schema>
+
+    <!-- ################ -->
+    <!-- Swisscom Profile -->
+    <!-- ################ -->    
+    <xs:schema targetNamespace="http://ais.swisscom.ch/1.0/schema"
+               xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
+               xmlns:sc="http://ais.swisscom.ch/1.0/schema"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"             
+               elementFormDefault="qualified"
+               attributeFormDefault="unqualified">
+
+      <xs:import namespace="urn:oasis:names:tc:dss:1.0:core:schema" />
+      <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" />
+
+      <!-- mimic dss:SignatureObject as a type -->
+      <xs:complexType name="SignatureObjectType">
+        <xs:sequence>
+          <xs:choice>
+            <xs:element ref="dss:Timestamp" />
+            <xs:element ref="dss:Base64Signature" />
+          </xs:choice>
+        </xs:sequence>
+      </xs:complexType>
+
+      <xs:complexType name="ExtendedSignatureObjectType">
+        <xs:complexContent>
+          <xs:extension base="sc:SignatureObjectType">
+            <xs:attribute name="WhichDocument" type="xs:ID" use="optional" />
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+
+      <xs:complexType name="SignatureObjectsType">
+        <xs:sequence>
+          <xs:element name="ExtendedSignatureObject" type="sc:ExtendedSignatureObjectType" maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="SignatureObjects" type="sc:SignatureObjectsType" />
+
+      <!-- Certificate Request with Mobile ID auth -->
+      
+      <xs:complexType name="CertificateRequestType">
+        <xs:sequence>
+          <xs:element name="DistinguishedName" type="xs:string" />
+          <xs:element name="StepUpAuthorisation" type="sc:StepUpAuthorisationType"
+                      minOccurs="0" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="CertificateRequest" type="sc:CertificateRequestType" />
+
+      <xs:complexType name="StepUpAuthorisationType">
+        <xs:sequence>
+          <xs:element name="MobileID" type="sc:MobileIDType" minOccurs="0" />
+        </xs:sequence>
+      </xs:complexType>
+
+      <xs:complexType name="MobileIDType">
+        <xs:sequence>
+          <xs:element name="MSISDN" type="xs:string" />
+          <xs:element name="Message" type="sc:MobileIDMessage" />
+          <xs:element name="Language" type="xs:string" />
+          <xs:element name="SerialNumber" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="Type" type="xs:string" use="required" />
+      </xs:complexType>
+
+      <xs:simpleType name="MobileIDMessage">
+        <xs:restriction base="xs:string">
+          <xs:maxLength value="120" />
+        </xs:restriction>
+      </xs:simpleType>
+
+      <!-- Mobile ID optional outputs -->
+      
+      <xs:element name="MobileIDAPTransID" type="xs:string" />
+      <xs:element name="MobileIDSerialNumber" type="xs:string" />       
+      
+      <xs:complexType name="MobileIDFaultType" final="extension">
+        <xs:sequence>
+          <xs:element name="Subcode" type="xs:QName" />
+          <xs:element name="Reason" type="xs:string" />
+          <xs:element name="Detail" type="sc:detail" minOccurs="0" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MobileIDFault" type="sc:MobileIDFaultType" />
+
+      <xs:complexType name="detail">
+        <xs:sequence>
+          <xs:element name="detail" type="xs:string" minOccurs="0"
+                      maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="detail" type="xs:string" />
+
+      <!-- Add RevocationInformation -->
+
+      <xs:complexType name="AddRevocationInformationType">
+        <xs:attribute name="Type" type="xs:string" use="required" />
+      </xs:complexType>
+      <xs:element name="AddRevocationInformation" type="sc:AddRevocationInformationType" />
+
+      <xs:complexType name="RevocationInformationType">
+        <xs:sequence>
+          <xs:element name="CRLs" type="sc:CRLList" minOccurs="0"
+                      maxOccurs="1" />
+          <xs:element name="OCSPs" type="sc:OCSPList" minOccurs="0"
+                      maxOccurs="1" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="RevocationInformation" type="sc:RevocationInformationType" />
+
+      <xs:complexType name="CRLList">
+        <xs:sequence>
+          <xs:element name="CRL" type="xs:base64Binary" minOccurs="1"
+                      maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:complexType>
+
+      <xs:complexType name="OCSPList">
+        <xs:sequence>
+          <xs:element name="OCSP" type="xs:base64Binary" minOccurs="1"
+                      maxOccurs="unbounded" />
+        </xs:sequence>
+      </xs:complexType>
+
+    </xs:schema>
+
+
+    <!-- ############## -->
+    <!-- OASIS DSS Core -->
+    <!-- ############## -->    
+    <xs:schema targetNamespace="urn:oasis:names:tc:dss:1.0:core:schema"
+               xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+               xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+               xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema" 
+               xmlns:sc="http://ais.swisscom.ch/1.0/schema"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"      
+               elementFormDefault="qualified"
+               attributeFormDefault="unqualified">
+
+      <xs:import namespace="http://www.w3.org/XML/1998/namespace" />
+      <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" />
+      <xs:import namespace="http://ais.swisscom.ch/1.0/schema" />
+      <xs:import namespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" />
+      
+      <xs:element name="InputDocuments">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="dss:DocumentHash" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      
+      <xs:complexType name="DocumentBaseType" abstract="true">
+        <xs:attribute name="ID" type="xs:ID" use="optional"/>
+      </xs:complexType>
+
+      <xs:element name="DocumentHash">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="dss:DocumentBaseType">
+              <xs:sequence>
+                <xs:element ref="ds:DigestMethod" minOccurs="0"/>
+                <xs:element ref="ds:DigestValue"/>
+              </xs:sequence>
+              <xs:attribute name="WhichReference" type="xs:integer" use="optional"/>
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:element name="SignatureObject">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice>
+              <xs:element ref="dss:Timestamp"/>
+              <xs:element ref="dss:Base64Signature"/>
+              <xs:element name="Other" type="dss:SignatureObjectOtherType"/>
+            </xs:choice>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:complexType name="SignatureObjectOtherType">
+        <xs:sequence>
+          <xs:element ref="sc:SignatureObjects" />
+        </xs:sequence>
+      </xs:complexType>
+      
+      
+      <xs:element name="Base64Signature">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:base64Binary">
+              <xs:attribute name="Type" type="xs:anyURI"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+      
+      <xs:element name="Result">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="ResultMajor" type="xs:anyURI"/>
+            <xs:element name="ResultMinor" type="xs:anyURI" minOccurs="0"/>
+            <xs:element name="ResultMessage" type="dss:InternationalStringType" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:complexType name="InternationalStringType">
+        <xs:simpleContent>
+          <xs:extension base="xs:string">
+            <xs:attribute ref="xml:lang" use="required"/>
+          </xs:extension>
+        </xs:simpleContent>
+      </xs:complexType>
+
+      <xs:element name="OptionalInputs">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="dss:ClaimedIdentity" minOccurs="0" />
+            <xs:element ref="dss:AdditionalProfile" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="dss:SignatureType" minOccurs="0" />
+            <xs:element ref="dss:AddTimestamp" minOccurs="0" />
+            <xs:element ref="sc:CertificateRequest" minOccurs="0" />
+            <xs:element ref="sc:AddRevocationInformation" minOccurs="0" />
+            <xs:element ref="async:ResponseID" minOccurs="0" />
+          </xs:sequence>
+        </xs:complexType>           
+      </xs:element>
+      
+      <xs:element name="OptionalOutputs">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="sc:RevocationInformation" minOccurs="0" />
+            <xs:element ref="sc:MobileIDAPTransID" minOccurs="0" />
+            <xs:element ref="sc:MobileIDSerialNumber" minOccurs="0" />  
+            <xs:element ref="sc:MobileIDFault" minOccurs="0" />
+            <xs:element ref="async:ResponseID" minOccurs="0" />
+          </xs:sequence>
+        </xs:complexType>           
+      </xs:element>
+
+      <xs:element name="ClaimedIdentity">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Name" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:element name="AdditionalProfile" type="xs:anyURI"/>
+
+      <xs:element name="SignatureType" type="xs:anyURI"/>
+      
+      <xs:complexType name="AddTimestampType">
+        <xs:attribute name="Type" type="xs:anyURI" default="urn:ietf:rfc:3161" />
+      </xs:complexType>
+      <xs:element name="AddTimestamp" type="dss:AddTimestampType" />
+
+      <xs:complexType name="RequestBaseType">
+        <xs:sequence>
+          <xs:element ref="dss:OptionalInputs" minOccurs="0"/>
+          <xs:element ref="dss:InputDocuments" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="RequestID" type="xs:string" use="optional"/>
+        <xs:attribute name="Profile" type="xs:anyURI" use="optional"/>
+      </xs:complexType>
+      
+      <xs:complexType name="ResponseBaseType">
+        <xs:sequence>
+          <xs:element ref="dss:Result"/>
+          <xs:element ref="dss:OptionalOutputs" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="RequestID" type="xs:string" use="optional"/>
+        <xs:attribute name="Profile" type="xs:anyURI" use="required"/>
+      </xs:complexType>
+      
+      <xs:element name="Response" type="dss:SignResponseType"/>
+      
+      <xs:element name="SignRequest">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="dss:RequestBaseType"/>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+
+      <xs:complexType name="SignResponseType">
+        <xs:complexContent>
+          <xs:extension base="dss:ResponseBaseType">
+            <xs:sequence>
+              <xs:element ref="dss:SignatureObject" minOccurs="0"/>
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:element name="SignResponse" type="dss:SignResponseType" />
+      
+      <xs:element name="Timestamp">
+        <xs:complexType>
+          <xs:choice>
+            <xs:element name="RFC3161TimeStampToken" type="xs:base64Binary"/>
+          </xs:choice>
+        </xs:complexType>
+      </xs:element>
+
+    </xs:schema>
+
+    <!-- ################## -->
+    <!-- SOAP Message Types -->
+    <!-- ################## -->
+    <xs:schema targetNamespace="http://service.ais.swisscom.com/"
+               xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+               xmlns:dss="urn:oasis:names:tc:dss:1.0:core:schema"
+               elementFormDefault="qualified" 
+               version="1.0">
+
+      <xs:import namespace="urn:oasis:names:tc:dss:1.0:core:schema" />
+      <xs:import namespace="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" />
+      <xs:import namespace="http://ais.swisscom.ch/1.0/schema" />
+
+      <xs:element name="pending" type="ais:pending" />
+      <xs:element name="pendingResponse" type="ais:pendingResponse" />
+      <xs:element name="sign" type="ais:sign" />
+      <xs:element name="signResponse" type="ais:signResponse" />
+      
+      <xs:complexType name="pending" >
+        <xs:sequence>
+          <xs:element minOccurs="0" ref="async:PendingRequest" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="pendingResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" ref="dss:Response" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="sign">
+        <xs:sequence>
+          <xs:element minOccurs="0" ref="dss:SignRequest" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="signResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" ref="dss:SignResponse" />
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+
+  <!-- ############# -->
+  <!-- SOAP Messages -->
+  <!-- ############# -->
+  <wsdl:message name="sign">
+    <wsdl:part element="ais:sign" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="signResponse">
+    <wsdl:part element="ais:signResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pendingResponse">
+    <wsdl:part element="ais:pendingResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="pending">
+    <wsdl:part element="ais:pending" name="parameters"></wsdl:part>
+  </wsdl:message>
+  
+  <wsdl:portType name="AisServiceInterface">
+    <wsdl:operation name="pending">
+      <wsdl:input message="ais:pending" name="pending"></wsdl:input>
+      <wsdl:output message="ais:pendingResponse" name="pendingResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="sign">
+      <wsdl:input message="ais:sign" name="sign"></wsdl:input>
+      <wsdl:output message="ais:signResponse" name="signResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="AisServiceSoapBinding" type="ais:AisServiceInterface">
+    <soap:binding style="document"
+                  transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="pending">
+      <soap:operation soapAction="" style="document" />
+      <wsdl:input name="pending">
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output name="pendingResponse">
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="sign">
+      <soap:operation soapAction="" style="document" />
+      <wsdl:input name="sign">
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output name="signResponse">
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="AisService">
+    <wsdl:port binding="ais:AisServiceSoapBinding" name="AisServicePort">
+      <soap:address location="https://ais.swisscom.com/AIS-Server/ws" />
+    </wsdl:port>
+  </wsdl:service>
 </wsdl:definitions>

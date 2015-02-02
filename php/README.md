@@ -118,6 +118,7 @@ $ais->addRevocationInformation('BOTH');
 $ais->addTimestamp(true);
 
 if ($ais->sign($digestValue, $digestMethod, 'cn=hans.muster@acme.ch,c=ch', '+41791234567', 'acme.ch: Sign the document Sample.pdf?', 'en')) {
+//if ($ais->sign($digestValue, $digestMethod, 'cn=hans.muster@acme.ch,c=ch', '+41791234567', 'acme.ch: Sign the document Sample.pdf?', 'en', 'MIDCHEGU8GSH6K83')) {
   echo "========= AllinSigningService:RESULT ==========" . PHP_EOL;
   echo 'Signed by: ' . $ais->sig_certSubject . PHP_EOL;
   echo 'SN of DN: ' . $ais->sig_certMIDSN . PHP_EOL;

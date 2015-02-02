@@ -1,6 +1,6 @@
 <?php
 /**
- * @version        1.0.0
+ * @version        1.0.1
  * @package        AllinSigningService
  * @copyright      Copyright (C) 2014. All rights reserved.
  * @license        GNU General Public License version 2 or later; see LICENSE.md
@@ -120,9 +120,10 @@ class AllinSigningService {
      * #params     string    (optional) Mobile Number if DN is set
      * #params     string    (optional) Mobile ID Message
      * #params     string    (optional) Mobile ID Language
+     * #params     string    (optional) Mobile ID SerialNumber
      * @return     boolean   true on success, false on failure
      */
-    public function sign($digestValue, $digestMethod, $DN='', $msisdn='', $msg='Do you want to sign?', $lang='em') {
+    public function sign($digestValue, $digestMethod, $DN='', $msisdn='', $msg='Do you want to sign?', $lang='em', $serialNumber='') {
         $this->sig_cert = '';
         $this->sig_certSubject = '';
         $this->sig_certMIDSN = '';
@@ -176,8 +177,19 @@ class AllinSigningService {
                                 'Message' => $msg,
                                 'Language' => $lang
         )   )   )   )   )   );
-        if (isset($msisdn) && $msisdn !== '')
+        $stepUPSerialNumber = array(
+           'SignRequest' => array(
+                'OptionalInputs' => array(
+                    'CertificateRequest' => array(
+                        'StepUpAuthorisation' => array(
+                            'MobileID' => array(
+                                'SerialNumber' => $serialNumber
+        )   )   )   )   )   );
+        if (isset($msisdn) && $msisdn !== '') {
+            if (isset($serialNumber) && $serialNumber !== '')
+                $stepUP = array_merge_recursive($stepUP, (array)$stepUPSerialNumber);
             $params = array_merge_recursive($params, (array)$stepUP);
+        }
 
         /* Define the AddRevocationInformation element */
         $addRevocationInformation = array(
