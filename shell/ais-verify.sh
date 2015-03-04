@@ -5,7 +5,7 @@
 #
 # Dependencies: openssl, sed, awk
 #
-# License: GNU General Public License version 3 or later; see LICENSE.md
+# License: Licensed under the Apache License, Version 2.0 or later; see LICENSE.md
 # Author: Swisscom (Schweiz) AG
 
 # Error function
