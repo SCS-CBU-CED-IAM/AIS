@@ -267,7 +267,6 @@ class AllinSigningService {
             $params = array_merge_recursive($params, (array)$addRevocationInformation);
 
         $this->client->__setLocation($this->base_url . '/AIS-Server/ws');
-        $this->client->setParams($this->customerID, 'TSA', $this->revocationInformation, false);
         if (!$this->__doCall('sign', $params)) return(false);
 
         /* Get the signature and signer details */
