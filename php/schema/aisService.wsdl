@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Description="Swisscom All-in Signing Service Interface 'Compact' WSDL" Version="1.0" -->
+<!-- Description="Swisscom All-in Signing Service Interface 'Compact' WSDL" Version="1.1" -->
 <!-- The 'compact' version is one file version matching exactly the AIS service features. -->
-<!-- It is itself not OASIS DSS Core complaint, but will produce valid OASIS DSS requests. -->
+<!-- It is itself not OASIS DSS Core compliant, but will produce valid OASIS DSS requests. -->
 
 <wsdl:definitions targetNamespace="http://service.ais.swisscom.com/"
                   xmlns:ais="http://service.ais.swisscom.com/"
@@ -147,26 +147,29 @@
       </xs:simpleType>
 
       <!-- Mobile ID optional outputs -->
-      
+
       <xs:element name="MobileIDAPTransID" type="xs:string" />
       <xs:element name="MobileIDSerialNumber" type="xs:string" />       
-      
-      <xs:complexType name="MobileIDFaultType" final="extension">
-        <xs:sequence>
-          <xs:element name="Subcode" type="xs:QName" />
-          <xs:element name="Reason" type="xs:string" />
-          <xs:element name="Detail" type="sc:detail" minOccurs="0" />
-        </xs:sequence>
-      </xs:complexType>
-      <xs:element name="MobileIDFault" type="sc:MobileIDFaultType" />
 
-      <xs:complexType name="detail">
-        <xs:sequence>
-          <xs:element name="detail" type="xs:string" minOccurs="0"
-                      maxOccurs="unbounded" />
-        </xs:sequence>
+      <xs:element name="MobileIDFault" type="sc:MobileIDFaultType" />
+      <xs:complexType name="MobileIDFaultType" final="extension">
+         <xs:sequence>
+            <xs:element name="Subcode" type="xs:QName" />
+            <xs:element name="Reason" type="xs:string" />
+            <xs:element name="Detail" type="sc:detail" minOccurs="0" />
+         </xs:sequence>
       </xs:complexType>
-      <xs:element name="detail" type="xs:string" />
+      <xs:complexType name="detail">
+         <xs:sequence>
+            <xs:element name="detail" type="xs:string" minOccurs="0"/>
+            <xs:element name="UserAssistance" type="sc:UserAssistanceType" minOccurs="0"/>
+         </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="UserAssistanceType">
+         <xs:sequence>
+            <xs:element name="PortalUrl" type="xs:anyURI" minOccurs="0"/>
+         </xs:sequence>
+      </xs:complexType>
 
       <!-- Add RevocationInformation -->
 
@@ -239,7 +242,6 @@
                 <xs:element ref="ds:DigestMethod" minOccurs="0"/>
                 <xs:element ref="ds:DigestValue"/>
               </xs:sequence>
-              <xs:attribute name="WhichReference" type="xs:integer" use="optional"/>
             </xs:extension>
           </xs:complexContent>
         </xs:complexType>
@@ -309,10 +311,10 @@
       <xs:element name="OptionalOutputs">
         <xs:complexType>
           <xs:sequence>
-            <xs:element ref="sc:RevocationInformation" minOccurs="0" />
             <xs:element ref="sc:MobileIDAPTransID" minOccurs="0" />
             <xs:element ref="sc:MobileIDSerialNumber" minOccurs="0" />  
             <xs:element ref="sc:MobileIDFault" minOccurs="0" />
+            <xs:element ref="sc:RevocationInformation" minOccurs="0" />
             <xs:element ref="async:ResponseID" minOccurs="0" />
           </xs:sequence>
         </xs:complexType>           
