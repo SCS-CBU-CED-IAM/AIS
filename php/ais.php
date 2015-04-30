@@ -1,6 +1,6 @@
 <?php
 /**
- * @version        1.0.1
+ * @version        1.0.2
  * @package        AllinSigningService
  * @copyright      Copyright (C) 2014. All rights reserved.
  * @license        Licensed under the Apache License, Version 2.0 or later; see LICENSE.md
@@ -33,6 +33,7 @@ class AllinSigningService {
 
     private $revocationInformation;        // Type of revocation information to be added
     private $addTimestamp;                 // Add timestamp to the signature?
+    private $userAssistanceURL;            // Mobile ID user assistance URL on error
  
     /**
      * Mobile ID class
@@ -101,6 +102,10 @@ class AllinSigningService {
             /* Get the ResultMessage */
             if (isset($this->response->SignResponse->Result->ResultMessage->_))
                 $this->resultmessage = (string)$this->response->SignResponse->Result->ResultMessage->_;
+
+            /* Get the Mobile ID User Assistance URL */
+            if (isset($this->response->SignResponse->OptionalOutputs->MobileIDFault->Detail->UserAssistance->PortalUrl))
+                $this->userAssistanceURL = (string)$this->response->SignResponse->OptionalOutputs->MobileIDFault->Detail->UserAssistance->PortalUrl;
 
             if ($this->resultmajor === 'urn:oasis:names:tc:dss:1.0:resultmajor:Success') {
                 return(true);
@@ -348,6 +353,15 @@ class AllinSigningService {
      */
     public function getLastResponse() {
         return($this->prettyXML($this->client->__getLastResponse()));
+    }
+
+    /**
+     * getMobileIDUserAssistanceURL - Returns Mobile ID User Assistance URL
+     * @return     string
+     */
+    public function getMobileIDUserAssistanceURL() {
+        /* Notice: the &amp; is replaced by the phpsoap class directly */
+	     return($this->userAssistanceURL);
     }
 
     /**

@@ -28,6 +28,8 @@ Example of content:
 -----END PRIVATE KEY-----
 ````
 
+Important notice: please review the content of your `mycertandkey.crt` file and be sure that the `-----BEGIN PRIVATE KEY-----` is starting on a new line.
+
 
 ## Connection options
 
@@ -83,8 +85,8 @@ if ($ais->timestamp($digestValue, $digestMethod)) {
   echo 'Signature: ' . $ais->getLastSignature() . PHP_EOL;
 }
 echo "========= AllinSigningService:STATUS =========" . PHP_EOL;
-echo 'ResultMajor:   ' . $ais->resultmajor . PHP_EOL;
-echo 'ResultMinor:   ' . $ais->resultminor . PHP_EOL;
+echo 'ResultMajor: ' . $ais->resultmajor . PHP_EOL;
+echo 'ResultMinor: ' . $ais->resultminor . PHP_EOL;
 echo 'ResultMessage: ' . $ais->resultmessage . PHP_EOL;
 unset($ais);
 
@@ -103,8 +105,8 @@ if ($ais->sign($digestValue, $digestMethod)) {
   echo 'Signature: ' . $ais->getLastSignature() . PHP_EOL;
 }
 echo "========= AllinSigningService:STATUS =========" . PHP_EOL;
-echo 'ResultMajor:   ' . $ais->resultmajor . PHP_EOL;
-echo 'ResultMinor:   ' . $ais->resultminor . PHP_EOL;
+echo 'ResultMajor: ' . $ais->resultmajor . PHP_EOL;
+echo 'ResultMinor: ' . $ais->resultminor . PHP_EOL;
 echo 'ResultMessage: ' . $ais->resultmessage . PHP_EOL;
 unset($ais);
 
@@ -125,8 +127,11 @@ if ($ais->sign($digestValue, $digestMethod, 'cn=hans.muster@acme.ch,c=ch', '+417
   echo 'Signature: ' . $ais->getLastSignature() . PHP_EOL;
 }
 echo "========= AllinSigningService:STATUS =========" . PHP_EOL;
-echo 'ResultMajor:   ' . $ais->resultmajor . PHP_EOL;
-echo 'ResultMinor:   ' . $ais->resultminor . PHP_EOL;
+echo 'ResultMajor: ' . $ais->resultmajor . PHP_EOL;
+echo 'ResultMinor: ' . $ais->resultminor . PHP_EOL;
 echo 'ResultMessage: ' . $ais->resultmessage . PHP_EOL;
+echo 'Mobile ID User Assistance URL: ' . $ais->getMobileIDUserAssistanceURL() . PHP_EOL;
 unset($ais);
+
+?>
 ````
