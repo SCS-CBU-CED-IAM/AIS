@@ -357,11 +357,24 @@ class AllinSigningService {
 
     /**
      * getMobileIDUserAssistanceURL - Returns Mobile ID User Assistance URL
+     * #params     string    Format to HTML and use this as hyperlink name
+     * #params     boolean   Return default URL if not present
      * @return     string
      */
-    public function getMobileIDUserAssistanceURL() {
-        /* Notice: the &amp; is replaced by the phpsoap class directly */
-	     return($this->userAssistanceURL);
+    public function getMobileIDUserAssistanceURL($hyperlink = '', $defaultIfNotSet = true) {
+        /* Get the URL and set to default if needed */
+        $url = $this->userAssistanceURL;
+        if ($url == '' && $defaultIfNotSet)
+            $url = 'http://mobileid.ch';
+
+        /* Replace the &amp; with & */
+        $url = str_replace('&amp;', '&', $url);
+
+        /* Format to HTML if not empty? */
+        if ($hyperlink !== '' && $url !== '')
+            $url = "<a href='" . $url . "' target='_blank'>" . $hyperlink . "</a>";
+
+        return($url);
     }
 
     /**

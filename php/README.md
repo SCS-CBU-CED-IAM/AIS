@@ -130,7 +130,7 @@ echo "========= AllinSigningService:STATUS =========" . PHP_EOL;
 echo 'ResultMajor: ' . $ais->resultmajor . PHP_EOL;
 echo 'ResultMinor: ' . $ais->resultminor . PHP_EOL;
 echo 'ResultMessage: ' . $ais->resultmessage . PHP_EOL;
-echo 'Mobile ID User Assistance URL: ' . $ais->getMobileIDUserAssistanceURL() . PHP_EOL;
+echo 'Mobile ID User Assistance URL: ' . $ais->getMobileIDUserAssistanceURL('', false) . PHP_EOL;
 unset($ais);
 
 ?>
