@@ -54,7 +54,7 @@ Usage: ./ais-sign.sh <options> file method pkcs7 [dn] [[msisdn]] [[msg]] [[lang]
 
 ###### Detached Signature Verification
 ```
-Usage: ./ais-verify.sh <options> pkcs7
+Usage: ./ais-verify.sh <options> file pkcs7
   -v         - verbose output
   -d         - debug mode
   file       - file to verify

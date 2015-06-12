@@ -27,7 +27,7 @@ done
 shift $((OPTIND-1))                             # Remove the options
 
 if [ $# -lt 2 ]; then                           # Parse the rest of the arguments
-  echo "Usage: $0 <options> pkcs7"
+  echo "Usage: $0 <options> file pkcs7"
   echo "  -v         - verbose output"
   echo "  -d         - debug mode"
   echo "  file       - file to verify"
