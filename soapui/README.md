@@ -3,7 +3,7 @@ AIS: SoapUI Project
 
 #### Introduction
 
-SoapUI is an open source web service testing application for service-oriented architectures (SOA). Its functionality covers web service inspection, invoking, development, simulation and mocking, functional testing, load and compliance testing. SoapUI has been given a number of awards.
+SoapUI is an open source web service testing application for service-oriented architectures (SOA). Its functionality covers web service inspection, invoking, development, simulation and mocking, functional testing, load and compliance testing.
 
 A SoapUI Project has been created that contains example requests to invoke:
 * Timestamp Request (RFC3161) Request
@@ -35,18 +35,22 @@ Double click "Regression Test Suite" to adapt the test properties.
 | Property | Description |
 | :------------- | :------------- |
 ${#TestSuite#BASEURL}|Base URL for the Endpoint. Use https://ais.swisscom.com
+${#TestSuite#PATH_SOAP}|Path to be used for the SOAP Endpoint. Use /AIS-Server/ws
+${#TestSuite#PATH_REST}|Path to be used for the REST Endpoint. Use /AIS-Server/rs/v1.0
 ${#TestSuite#AP_ID}|Your ClaimedIdentity Customer ID (AP_ID)
 ${#TestSuite#STATIC_ID}|Your ClaimedIdentity Key ID for Static Keys
 ${#TestSuite#ONDEMAND_QUALIFIED}|Your ClaimedIdentity Key ID for OnDemand Keys and enforced MID Auth
 ${#TestSuite#ONDEMAND_ADVANCED}|Your ClaimedIdentity Key ID for OnDemand Keys and optional MID Auth
-${#TestSuite#MSISDN}|The Mobile Subscriber Number
+${#TestSuite#MSISDN}|The Mobile Subscriber Number (MSISDN) that can be used for OnDemand Signatures with Mobile ID Authentication
 ${#TestSuite#OnDemand_CN}|CommonName for OnDemand Requests
 ${#TestSuite#OnDemand_O}|OrganizationName for OnDemand Requests
 ${#TestSuite#OnDemand_C}|CountryName for OnDemand Requests
 ${#TestSuite#USER_ALERT}|Turn on ('true') or off ('false') user alert messages before any Mobile ID authentication
+${#TestSuite#SHA1}|URI For SHA-1 Algorithm
 ${#TestSuite#SHA256}|URI For SHA-256 Algorithm
 ${#TestSuite#SHA384}|URI For SHA-384 Algorithm
 ${#TestSuite#SHA512}|URI For SHA-512 Algorithm
+${#TestSuite#DIGEST_1}|Base64 encoded binary hash (SHA-1) value of any document
 ${#TestSuite#DIGEST_256}|Base64 encoded binary hash (SHA-256) value of any document
 ${#TestSuite#DIGEST_384}|Base64 encoded binary hash (SHA-384) value of any document
 ${#TestSuite#DIGEST_512}|Base64 encoded binary hash (SHA-512) value of any document
@@ -81,6 +85,8 @@ Double click "Benchmark" to adapt the test properties.
 | Property | Description |
 | :------------- | :------------- |
 ${#TestSuite#BASEURL}|Base URL for the Endpoint. Use https://ais.swisscom.com
+${#TestSuite#PATH_SOAP}|Path to be used for the SOAP Endpoint. Use /AIS-Server/ws
+${#TestSuite#PATH_REST}|Path to be used for the REST Endpoint. Use /AIS-Server/rs/v1.0
 ${#TestSuite#AP_ID}|Your ClaimedIdentity Customer ID (AP_ID)
 ${#TestSuite#STATIC_ID}|Your ClaimedIdentity Key ID for Static Keys
 ${#TestSuite#ONDEMAND_ADVANCED}|Your ClaimedIdentity Key ID for OnDemand Keys and optional MID Auth
