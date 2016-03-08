@@ -1,6 +1,6 @@
 <?php
 /**
- * @version        1.0.2
+ * @version        1.0.3
  * @package        AllinSigningService
  * @copyright      Copyright (C) 2014. All rights reserved.
  * @license        Licensed under the Apache License, Version 2.0 or later; see LICENSE.md
@@ -30,6 +30,7 @@ class AllinSigningService {
     public $sig_cert;                      // AIS certificate related to signature
     public $sig_certSubject;               // Signers subject
     public $sig_certMIDSN;                 // Signers Mobile ID serial number in the DN
+    public $sig_certChain;                 // Certificate chain related to the AIS certificate
 
     private $revocationInformation;        // Type of revocation information to be added
     private $addTimestamp;                 // Add timestamp to the signature?
@@ -132,6 +133,7 @@ class AllinSigningService {
         $this->sig_cert = '';
         $this->sig_certSubject = '';
         $this->sig_certMIDSN = '';
+        $this->sig_certChain = array();
 
         /* Define the base elements */
         $params = array(
@@ -234,6 +236,7 @@ class AllinSigningService {
         $this->sig_cert = '';
         $this->sig_certSubject = '';
         $this->sig_certMIDSN = '';
+        $this->sig_certChain = array();
 
         /* Define the base elements */
         $params = array(
@@ -430,6 +433,12 @@ class AllinSigningService {
                         $this->sig_cert = $cert;
             }   }   }
             $certificate = openssl_x509_parse($this->sig_cert);
+
+            /* Define other certificates as chain */
+            foreach ($certs as $cert) {
+                if ($cert != $this->sig_cert)
+                    $this->sig_certChain[] = $cert;
+            }
 
             /* Get the signer name */
             $this->sig_certSubject = $certificate['name'];
