@@ -7,8 +7,9 @@
 		<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 			attributeFormDefault="unqualified" elementFormDefault="unqualified"
 			targetNamespace="http://www.w3.org/XML/1998/namespace" />
-		<include href="../schema/oasis/oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd"/>
-		<include href="../schema/swisscom-ais-profile-schema-v1.0.xsd" />
+		<include href="oasis-dss-core-schema-v1.0-os.xsd"/>
+		<include href="oasis-dss-profiles-asynchronous-processing-schema-v1.0-os.xsd"/>
+		<include href="swisscom-ais-profile-schema-v1.1.xsd" />
 	</grammars>
 
 	<resources base="https://ais.swisscom.com/AIS-Server/rs">
@@ -21,8 +22,7 @@
 						<representation mediaType="application/json" />
 					</request>
 					<response>
-						<representation mediaType="application/xml"
-							element="dss:Response" />
+						<representation mediaType="application/xml" />
 						<representation mediaType="application/json" />
 					</response>
 				</method>
@@ -36,7 +36,7 @@
 					</request>
 					<response>
 						<representation mediaType="application/xml"
-							element="dss:Response" />
+							element="dss:SignResponse" />
 						<representation mediaType="application/json" />
 					</response>
 				</method>
