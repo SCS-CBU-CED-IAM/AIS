@@ -1,0 +1,13 @@
+BASEURL=https://ais.swisscom.com
+BASEURL_CONSENT=https://ais-sas.swisscom.com
+ONDEMAND_ADVANCED=OnDemand-Advanced
+ONDEMAND_QUALIFIED=OnDemand-Advanced
+AP_ID=IAM-Test
+STATIC_ID=kp1-iam-signer
+USER_ALERT=true
+USER_ALERT_PwdOTP=true
+MSISDN=41754102635
+MSISDN_non_MID=41794374625
+OnDemand_CN=Eva Ramon
+OnDemand_O=Swisscom (Schweiz) AG
+OnDemand_C=CH

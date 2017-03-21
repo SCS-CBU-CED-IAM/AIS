@@ -1,0 +1,13 @@
+BASEURL=https://ais.pre.swissdigicert.ch
+BASEURL_CONSENT=https://ais-sas.pre.swissdigicert.ch
+ONDEMAND_ADVANCED=OnDemand-Advanced
+ONDEMAND_QUALIFIED=OnDemand-Qualified
+AP_ID=IAM-Test
+STATIC_ID=kp1-iam-signer
+USER_ALERT=true
+USER_ALERT_PwdOTP=true
+MSISDN=41797973649
+MSISDN_non_MID=41794374625
+OnDemand_CN=Robert van Haarlem
+OnDemand_O=Swisscom (Schweiz) AG
+OnDemand_C=CH
