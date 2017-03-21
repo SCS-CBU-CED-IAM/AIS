@@ -11928,7 +11928,7 @@ declare namespace ais="http://service.ais.swisscom.com/"
                <ClaimedIdentity>
                   <Name>${#TestSuite#AP_ID}</Name>
                </ClaimedIdentity>
-               <async:ResponseID>c9611bb4-3bde-4ea4-b29f-e0ad7841b8b0</async:ResponseID>
+               <async:ResponseID>a95851fb-3366-4840-b631-0103de6f73bd</async:ResponseID>
             </OptionalInputs>
          </async:PendingRequest>
       </ais:pending>
@@ -11963,7 +11963,7 @@ matches(//xmlns:ResultMajor/text(),'Pending')</con:expression><con:targetStep>Po
                <ClaimedIdentity>
                   <Name>${#TestSuite#AP_ID}</Name>
                </ClaimedIdentity>
-               <async:ResponseID>c9611bb4-3bde-4ea4-b29f-e0ad7841b8b0</async:ResponseID>
+               <async:ResponseID>a95851fb-3366-4840-b631-0103de6f73bd</async:ResponseID>
             </OptionalInputs>
          </async:PendingRequest>
       </ais:pending>
@@ -12090,7 +12090,7 @@ declare namespace ais="http://service.ais.swisscom.com/"
                <ClaimedIdentity>
                   <Name>${#TestSuite#AP_ID}</Name>
                </ClaimedIdentity>
-               <async:ResponseID>83e2c825-4383-4b55-8e44-6779c12f1314</async:ResponseID>
+               <async:ResponseID>66a02df1-5cf2-484b-ac3b-02e05cb04fc6</async:ResponseID>
             </OptionalInputs>
          </async:PendingRequest>
       </ais:pending>
@@ -12125,7 +12125,7 @@ matches(//xmlns:ResultMajor/text(),'Pending')</con:expression><con:targetStep>Po
                <ClaimedIdentity>
                   <Name>${#TestSuite#AP_ID}</Name>
                </ClaimedIdentity>
-               <async:ResponseID>83e2c825-4383-4b55-8e44-6779c12f1314</async:ResponseID>
+               <async:ResponseID>66a02df1-5cf2-484b-ac3b-02e05cb04fc6</async:ResponseID>
             </OptionalInputs>
          </async:PendingRequest>
       </ais:pending>
@@ -14389,6 +14389,85 @@ declare namespace async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocess
             <Name>${#TestSuite#AP_ID}</Name>
         </ClaimedIdentity>
         <async:ResponseID>56b7d5a5-8261-4302-85e8-f41a08f6b62e</async:ResponseID>
+    </OptionalInputs>
+</async:PendingRequest>]]></con:request><con:originalUri>https://ais.swisscom.com/AIS-Server/rs/v1.0/pending</con:originalUri><con:assertion type="Valid HTTP Status Codes" name="Valid HTTP Status Codes" id="435bfc39-e5a8-4070-bbc3-3a31b38fdef1"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="XPath Match" id="3db28a24-936c-4f8a-9d83-69cdfa83778f" name="XPath Match"><con:configuration><path>declare namespace xmlns='urn:oasis:names:tc:dss:1.0:core:schema';
+declare namespace sc='http://ais.swisscom.ch/1.0/schema';
+declare namespace async='urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0';
+declare namespace dsig='http://www.w3.org/2000/09/xmldsig#';
+//xmlns:SignResponse</path><content><![CDATA[<SignResponse RequestID="*" Profile="http://ais.swisscom.ch/1.1" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:sc="http://ais.swisscom.ch/1.0/schema" xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" xmlns:sas="http://sas.swisscom.ch/1.0/schema" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
+  <Result>
+    <ResultMajor>urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending</ResultMajor>
+  </Result>
+  <OptionalOutputs>
+    <ns4:ResponseID xmlns:ns4="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" xmlns="http://www.w3.org/2000/09/xmldsig#" xmlns:ns2="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:ns3="http://ais.swisscom.ch/1.0/schema" xmlns:ns5="http://sas.swisscom.ch/1.0/schema" xmlns:ns6="urn:oasis:names:tc:SAML:2.0:assertion">*</ns4:ResponseID>
+    <sc:StepUpAuthorisationInfo>
+      <sc:Result>
+        <sc:ConsentURL>*</sc:ConsentURL>
+      </sc:Result>
+    </sc:StepUpAuthorisationInfo>
+  </OptionalOutputs>
+</SignResponse>]]></content><allowWildcards>true</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:selectedAuthProfile>Basic</con:selectedAuthProfile><con:addedBasicAuthenticationTypes>Basic</con:addedBasicAuthenticationTypes><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="Accept" value="" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry/></con:parameterOrder></con:restRequest></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="108f0649-5ea8-4a2d-bf77-7234ad772cbe" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="10 RESTful OnDemand Only PWDOTP with MID-active (no MID)" searchProperties="true"><con:settings/><con:testStep type="restrequest" name="XML OnDemand PWDOTP [asyn]" id="694acb0a-501e-4d34-9866-dd6af8e8b7ea"><con:settings/><con:config service="AIS RESTful" resourcePath="${#TestSuite#PATH_REST}/sign" methodName="POST" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="XML OnDemand 1 MID PinNrBlocked [asyn]" mediaType="application/xml" postQueryString="false" accept="" id="c729b9f2-c24f-411d-a112-8b4d63398d8a"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment xmlns:con="http://eviware.com/soapui/config">
+  &lt;con:entry key="Accept" value="application/xml"/>
+  &lt;con:entry key="Accept" value="application/xml"/>
+&lt;/xml-fragment></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>${#TestSuite#BASEURL}</con:endpoint><con:request><![CDATA[<SignRequest RequestID="${=new Date().format("yyyy-MM-dd'T'HH:mm:ss.SSSZ")}" Profile="http://ais.swisscom.ch/1.1" xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:sc="http://ais.swisscom.ch/1.0/schema">
+   <OptionalInputs>
+      <ClaimedIdentity>
+         <Name>IAM-Test-PWDOTP:${#TestSuite#ONDEMAND_ADVANCED}</Name>
+      </ClaimedIdentity>
+      <SignatureType>urn:ietf:rfc:3369</SignatureType>
+      <AdditionalProfile>http://ais.swisscom.ch/1.0/profiles/batchprocessing</AdditionalProfile>
+      <AdditionalProfile>urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing</AdditionalProfile>
+      <AdditionalProfile>http://ais.swisscom.ch/1.0/profiles/ondemandcertificate</AdditionalProfile>
+      <AdditionalProfile>http://ais.swisscom.ch/1.1/profiles/redirect</AdditionalProfile> 
+      <sc:CertificateRequest>
+         <sc:DistinguishedName>cn=${#TestSuite#OnDemand_CN}, o=${#TestSuite#OnDemand_O}, ou=Certificate and signatures for test purpose only, c=${#TestSuite#OnDemand_C}</sc:DistinguishedName>
+         <sc:StepUpAuthorisation>
+            <sc:Phone>
+               <sc:MSISDN>${#TestSuite#MSISDN}</sc:MSISDN>
+               <sc:Message>Test 10: XML OnDemand Only PWDOTP with MID-active (no MID) [asyn]</sc:Message>
+               <sc:Language>FR</sc:Language>
+            </sc:Phone>
+         </sc:StepUpAuthorisation>
+      </sc:CertificateRequest>
+      <AddTimestamp Type="urn:ietf:rfc:3161"/>
+      <sc:AddRevocationInformation Type="BOTH"/>
+   </OptionalInputs>
+     <InputDocuments>
+      <DocumentHash>
+         <dsig:DigestMethod Algorithm="${#TestSuite#SHA256}"/>
+         <dsig:DigestValue>${#TestSuite#DIGEST_256}</dsig:DigestValue>
+      </DocumentHash>
+   </InputDocuments>
+</SignRequest>]]></con:request><con:originalUri>https://ais.swisscom.com/AIS-Server/rs/v1.0/sign</con:originalUri><con:assertion type="Valid HTTP Status Codes" name="Valid HTTP Status Codes" id="44e15d5d-b2ef-48c7-af45-1494c07dc1cc"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="XPath Match" name="XPath Match" id="429b6e59-6417-412d-bbde-05e520f835e9"><con:configuration><path>declare namespace xmlns='urn:oasis:names:tc:dss:1.0:core:schema';
+declare namespace sc='http://ais.swisscom.ch/1.0/schema';
+declare namespace async='urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0';
+declare namespace dsig='http://www.w3.org/2000/09/xmldsig#';
+//xmlns:SignResponse</path><content><![CDATA[<SignResponse RequestID="*" Profile="http://ais.swisscom.ch/1.1" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:sc="http://ais.swisscom.ch/1.0/schema" xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0" xmlns:sas="http://sas.swisscom.ch/1.0/schema" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">
+  <Result>
+    <ResultMajor>urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:resultmajor:Pending</ResultMajor>
+  </Result>
+  <OptionalOutputs>
+    <async:ResponseID>*</async:ResponseID>
+    <sc:StepUpAuthorisationInfo>
+      <sc:Result>
+        <sc:ConsentURL>*</sc:ConsentURL>
+      </sc:Result>
+    </sc:StepUpAuthorisationInfo>
+  </OptionalOutputs>
+</SignResponse>]]></content><allowWildcards>true</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:selectedAuthProfile>Basic</con:selectedAuthProfile><con:addedBasicAuthenticationTypes>Basic</con:addedBasicAuthenticationTypes><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="Accept" value="" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry/></con:parameterOrder></con:restRequest></con:config></con:testStep><con:testStep type="transfer" name="Transfer ResponseID 1" id="e209d03d-cea2-442b-a56d-0e2101954a5e"><con:settings/><con:config xsi:type="con:PropertyTransfersStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="false" transferToAll="false" entitize="false" transferChildNodes="false"><con:name>Poll Final</con:name><con:sourceType>ResponseAsXml</con:sourceType><con:sourceStep>XML OnDemand PWDOTP [asyn]</con:sourceStep><con:sourcePath>declare namespace xmlns='urn:oasis:names:tc:dss:1.0:core:schema';
+declare namespace sc='http://ais.swisscom.ch/1.0/schema';
+declare namespace async='urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0';
+declare namespace dsig='http://www.w3.org/2000/09/xmldsig#';
+//xmlns:SignResponse/xmlns:OptionalOutputs/async:ResponseID</con:sourcePath><con:targetType>Request</con:targetType><con:targetStep>XML Poll RequestID 1 (IsValidConsentURL)</con:targetStep><con:targetPath>declare namespace dsig="http://www.w3.org/2000/09/xmldsig#" 
+declare namespace xmlns="urn:oasis:names:tc:dss:1.0:core:schema" 
+declare namespace ais="http://ais.swisscom.ch/1.0/schema" 
+declare namespace async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0"
+//async:PendingRequest/xmlns:OptionalInputs/async:ResponseID</con:targetPath><con:upgraded>true</con:upgraded></con:transfers></con:config></con:testStep><con:testStep type="delay" name="Poll Delay 1" id="353b44e8-de64-464d-97a7-94cb177a2027"><con:settings/><con:config><delay>1000</delay></con:config></con:testStep><con:testStep type="restrequest" name="XML Poll RequestID 1 (IsValidConsentURL)" id="a7da9f2b-9633-4366-a44e-ea5c619db251"><con:settings/><con:config service="AIS RESTful" resourcePath="${#TestSuite#PATH_REST}/pending" methodName="POST" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="XML Poll RequestID 1 (IsValidConsentURL)" mediaType="application/xml" postQueryString="false" accept="" id="d54a620f-092c-45e5-a212-9a8e2db9abe4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;entry key="Accept" value="application/xml" xmlns="http://eviware.com/soapui/config"/></con:setting></con:settings><con:endpoint>${#TestSuite#BASEURL}</con:endpoint><con:request><![CDATA[<async:PendingRequest Profile="http://ais.swisscom.ch/1.1" xmlns="urn:oasis:names:tc:dss:1.0:core:schema" xmlns:async="urn:oasis:names:tc:dss:1.0:profiles:asynchronousprocessing:1.0">
+    <OptionalInputs>
+        <ClaimedIdentity>
+            <Name>IAM-Test-PWDOTP</Name>
+        </ClaimedIdentity>
+        <async:ResponseID>2c41dc6d-9d11-495e-ac72-b5af8aaf7709</async:ResponseID>
     </OptionalInputs>
 </async:PendingRequest>]]></con:request><con:originalUri>https://ais.swisscom.com/AIS-Server/rs/v1.0/pending</con:originalUri><con:assertion type="Valid HTTP Status Codes" name="Valid HTTP Status Codes" id="435bfc39-e5a8-4070-bbc3-3a31b38fdef1"><con:configuration><codes>200</codes></con:configuration></con:assertion><con:assertion type="XPath Match" id="3db28a24-936c-4f8a-9d83-69cdfa83778f" name="XPath Match"><con:configuration><path>declare namespace xmlns='urn:oasis:names:tc:dss:1.0:core:schema';
 declare namespace sc='http://ais.swisscom.ch/1.0/schema';
