@@ -14,7 +14,7 @@ WADL Code Generation with Apache CXF:
 ```
 NOTE:
 
-Add the following commandline arguments to the wadl2java/wsdl2java Batch (Windows) file / Shell (Linux) script (located <apache-cxf>/bin) within the call to the java main class WADLToJava / WSDLtoJava:
+Add the following commandline arguments to the wadl2java/wsdl2java Batch (Windows) file / Shell (Linux) script (located \<apache-cxf\>/bin) within the call to the java main class WADLToJava / WSDLtoJava:
 
 ```
 -Djavax.xml.accessExternalSchema=all -Djavax.xml.accessExternalDTD=all
