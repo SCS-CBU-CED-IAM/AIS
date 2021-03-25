@@ -1,3 +1,6 @@
+# Migrated to: https://github.com/SwisscomTrustServices/AIS
+Use only this repository.
+
 Swisscom All-in Signing Service (AIS)
 ============
 
